@@ -1,24 +1,39 @@
-import './style.css'
-import typescriptLogo from './typescript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.ts'
+import '@styles/style.css'
+import Header from './components/Header.ts'
+import {THEME, type Theme} from './components/ThemeSwitch.ts'
+import {storage} from "@services/LocalStorage.ts";
+import {Footer} from "@components/Footer.ts";
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-`
+class Main {
+    $el: HTMLElement
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+    constructor() {
+        const main = this.$el = document.createElement('main')
+        this.$el.setAttribute('id', 'main')
+
+        const body = document.querySelector('body')
+        const theme = storage.getItem<Theme>('theme') ?? THEME.DEFAULT
+        const header = new Header({theme})
+        const footer = new Footer()
+        const section = new Section()
+
+        body?.appendChild(header.el)
+        body?.appendChild(main)
+        body?.appendChild(footer.el)
+
+        this.setListeners()
+    }
+
+    setListeners () {
+        const root = document.querySelector<HTMLHtmlElement>('html')
+
+        document.addEventListener('themechanged', ((ev: CustomEvent) => {
+            const { theme } = ev.detail
+            storage.setItem<string>('theme', theme)
+            root?.classList.toggle(THEME.DARK)
+            root?.classList.toggle(THEME.LIGHT)
+        })  as EventListener)
+    }
+}
+
+new Main()

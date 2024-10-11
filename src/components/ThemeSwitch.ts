@@ -1,28 +1,47 @@
-type Theme = 'dark' | 'light'
-const defaultTheme: Theme = 'dark'
+import {SunHighIcon, MoonStarsIcon} from "../icons/Icon.ts";
+
+export const THEME = {
+    DEFAULT: 'dark',
+    DARK: 'dark',
+    LIGHT: 'light',
+}
+export type Theme = typeof THEME[keyof typeof THEME]
+
+export interface ThemeSwitchParams {
+    theme?: Theme | null
+}
 
 export default class ThemeSwitch {
-    htmlLiteral: string
-    root: HTMLElement | null
     currentTheme: Theme
+    $el: HTMLButtonElement
 
-    constructor() {
-        this.htmlLiteral = `
-            <button class="theme-button">
-                <span class="theme-button-content">
-                <span class="theme-button-content__icon--dark"></span></span>
-                <span class="theme-button-content__text">Theme</span>
-            </button>
+    constructor({theme}: ThemeSwitchParams) {
+        this.$el = document.createElement('button')
+        this.$el.classList.add('theme-switch', `${theme}`)
+        this.$el.innerHTML = `
+            <span class="theme-switch__content">
+                <span class="theme-switch__content__icon">${SunHighIcon}${MoonStarsIcon}</span>
+                <span class="theme-switch__content__text">Theme</span>
+            </span>
         `
-        this.currentTheme = defaultTheme
-        this.root = document.querySelector<HTMLElement>('html')
+        this.currentTheme = theme ?? THEME.DEFAULT
+
+        this.$el.addEventListener('click', this.changeTheme)
     }
 
-    onClick () {
-        if (this.root?.classList.contains('')) {}
+    changeTheme() {
+        this.currentTheme = (this.currentTheme === THEME.DARK)
+            ? THEME.LIGHT
+            : THEME.DARK
+
+        document.dispatchEvent(new CustomEvent('themechanged', {
+            detail: {
+                theme: this.currentTheme
+            }
+        }))
     }
 
-    get html () {
-        return this.htmlLiteral
+    get el() {
+        return this.$el
     }
 }
