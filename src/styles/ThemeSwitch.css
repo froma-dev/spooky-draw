@@ -1,0 +1,61 @@
+.theme-switch {
+    --border-color: var(--honeydew);
+    --border-color-hover: #646cff;
+
+    width: 64px;
+    height: 64px;
+    overflow: hidden;
+    border-radius: 40px;
+    border: 2px solid var(--border-color);
+    font-size: 1.5em;
+    font-weight: 500;
+    font-family: inherit;
+    color: var(--eerie-black);
+    background-color: var(--eerie-black);
+    cursor: pointer;
+    transition: border-color 0.25s;
+
+    &:hover {
+        border-color: var(--border-color-hover);
+    }
+
+/*    &:focus,
+    &:focus-visible {
+        outline: 4px auto -webkit-focus-ring-color;
+    }*/
+
+    .__content {
+        display: flex;
+        align-items: center;
+        transform: translateX(18%);
+        transition: transform 0.25s ease-in-out;
+
+        .__icon {
+            svg {
+                fill: var(--honeydew);
+            }
+
+            display: flex;
+            gap: 0.5rem;
+        }
+    }
+}
+
+html.light {
+    .theme-switch {
+        background-color: var(--honeydew);
+        --border-color: var(--night);
+        color: var(--night);
+
+        .__content {
+            transform: translateX(-63%);
+
+            .__icon {
+                svg {
+                    fill: var(--eerie-black);
+                    stroke: var(--eerie-black);
+                }
+            }
+        }
+    }
+}

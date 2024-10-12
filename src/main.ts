@@ -6,16 +6,19 @@ import {Footer} from "@components/Footer.ts";
 
 class Main {
     $el: HTMLElement
+    $root: HTMLHtmlElement | null
 
     constructor() {
         const main = this.$el = document.createElement('main')
-        this.$el.setAttribute('id', 'main')
+        this.$el.setAttribute('id', 'app')
+        this.$root = document.querySelector<HTMLHtmlElement>('html')
 
         const body = document.querySelector('body')
         const theme = storage.getItem<Theme>('theme') ?? THEME.DEFAULT
+        this.$root?.classList.add(theme)
         const header = new Header({theme})
         const footer = new Footer()
-        const section = new Section()
+        //const section = new Section()
 
         body?.appendChild(header.el)
         body?.appendChild(main)
@@ -25,13 +28,11 @@ class Main {
     }
 
     setListeners () {
-        const root = document.querySelector<HTMLHtmlElement>('html')
-
         document.addEventListener('themechanged', ((ev: CustomEvent) => {
             const { theme } = ev.detail
             storage.setItem<string>('theme', theme)
-            root?.classList.toggle(THEME.DARK)
-            root?.classList.toggle(THEME.LIGHT)
+            this.$root?.classList.toggle(THEME.DARK)
+            this.$root?.classList.toggle(THEME.LIGHT)
         })  as EventListener)
     }
 }

@@ -1,4 +1,5 @@
 import {SunHighIcon, MoonStarsIcon} from "../icons/Icon.ts";
+import "@styles/ThemeSwitch.css"
 
 export const THEME = {
     DEFAULT: 'dark',
@@ -17,11 +18,10 @@ export default class ThemeSwitch {
 
     constructor({theme}: ThemeSwitchParams) {
         this.$el = document.createElement('button')
-        this.$el.classList.add('theme-switch', `${theme}`)
+        this.$el.classList.add('theme-switch')
         this.$el.innerHTML = `
-            <span class="theme-switch__content">
-                <span class="theme-switch__content__icon">${SunHighIcon}${MoonStarsIcon}</span>
-                <span class="theme-switch__content__text">Theme</span>
+            <span class="__content">
+                <span class="__icon">${SunHighIcon}${MoonStarsIcon}</span>
             </span>
         `
         this.currentTheme = theme ?? THEME.DEFAULT
