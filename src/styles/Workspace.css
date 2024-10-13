@@ -1,0 +1,19 @@
+.workspace {
+
+    .__content {
+        display: flex;
+        gap: 1rem;
+
+        canvas {
+            border: 1px solid var(--gray);
+
+            &.--image {
+
+            }
+
+            &.--canvas {
+
+            }
+        }
+    }
+}

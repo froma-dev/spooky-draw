@@ -3,6 +3,7 @@ import Header from './components/Header.ts'
 import {THEME, type Theme} from './components/ThemeSwitch.ts'
 import {storage} from "@services/LocalStorage.ts";
 import {Footer} from "@components/Footer.ts";
+import {Workspace} from "@components/Workspace.ts";
 
 class Main {
     $el: HTMLElement
@@ -18,7 +19,9 @@ class Main {
         this.$root?.classList.add(theme)
         const header = new Header({theme})
         const footer = new Footer()
-        //const section = new Section()
+        const workspace = new Workspace()
+
+        main.appendChild(workspace.el)
 
         body?.appendChild(header.el)
         body?.appendChild(main)
