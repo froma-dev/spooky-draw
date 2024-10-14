@@ -81,7 +81,14 @@ export class Workspace {
     }
 
     setCanvasLayer() {
-        this.layers.setCanvasLayer()
+        const canvasLayer = new Layer({type: 'canvas'})
+
+        // Empty canvas
+        this.layers.setCanvasDisplay()
+        canvasLayer.setCanvasSize(this.$canvasContainer.clientWidth, this.$canvasContainer.clientHeight)
+        this.$canvasContainer.appendChild(canvasLayer.el)
+
+        // New canvas
         this.layers.setEmptyCanvasLayer()
     }
 

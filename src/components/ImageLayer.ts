@@ -32,8 +32,7 @@ export default class ImageLayer extends Layer {
         const canvasAspectRatio = canvasWidth / canvasHeight
         let drawWidth, drawHeight, offsetX, offsetY
 
-        $canvas.width = canvasWidth
-        $canvas.height = canvasHeight
+        this.setCanvasSize(canvasWidth, canvasHeight)
 
         if (imageAspectRatio > canvasAspectRatio) {
             drawHeight = canvasHeight

@@ -70,7 +70,7 @@ export default class Layers {
         this.$el.appendChild(layer)
     }
 
-    setCanvasLayer () {
+    setCanvasDisplay () {
         const layer = document.createElement('div')
         layer.classList.add('layer', '--canvas')
         layer.innerHTML = `
