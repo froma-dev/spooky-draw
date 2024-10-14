@@ -1,5 +1,5 @@
 import "@styles/Layers.css"
-import {PlusIcon} from "@icons/Icon.ts";
+import {Eye, PlusIcon, TrashFilled} from "@icons/Icon.ts";
 
 interface ImageDisplayParams {
     image: {
@@ -72,11 +72,10 @@ export class Layers {
 
     setCanvasLayer () {
         const layer = document.createElement('div')
-        layer.classList.add('layer')
+        layer.classList.add('layer', '--canvas')
         layer.innerHTML = `
                 <div>
-                    <span class="__icon">${PlusIcon}</span>
-                    <span class="text">Add canvas</span>
+                    <span class="__icon">${TrashFilled}${Eye}</span>
                 </div>
         `
 
