@@ -2,17 +2,21 @@
 
     .__content {
         display: flex;
+        width: 100%;
         gap: 1rem;
 
-        canvas {
+        .canvas-container {
+            width: 100%;
+            flex-grow: 1;
             border: 1px solid var(--gray);
+            canvas {
+                &.--image {
 
-            &.--image {
+                }
 
-            }
+                &.--canvas {
 
-            &.--canvas {
-
+                }
             }
         }
     }

@@ -2,49 +2,72 @@
     display: flex;
     width: 248px;
     height: 799px;
-    padding: 0px 16px 16px 16px;
+    padding: 0 16px 16px 16px;
     flex-direction: column;
     align-items: center;
     gap: 2rem;
     border: 1px solid var(--gray);
 
     .layer {
+        position: relative;
         height: 220px;
         width: 220px;
         border-radius: 12px;
         transition: background-color 0.2s ease-in-out;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
 
-        &.--add {
+        img {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            z-index: -1;
+            object-fit: cover;
+        }
+
+        .input-file {
+            display: none;
+        }
+
+        label {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border-radius: 12px;
-            border: 4px dashed #6100DF;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            transition: opacity 0.3s ease-in-out;
+        }
 
-            label {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                width: 100%;
-                height: 100%;
-                cursor: pointer;
-            }
-
-            input {
-                display: none;
-            }
+        &.--add {
+            border: 2px dashed #6100DF;
 
             .__icon {
                 background-color: transparent;
                 border: none;
             }
         }
+        &.--change {
+            border: 2px solid var(--gray);
+
+            label {
+                opacity: 0;
+            }
+        }
 
         &:hover {
             background-color: var(--eerie-black-low-opacity);
             cursor: pointer;
+
+            &.--change {
+                label {
+                    opacity: 1;
+                }
+            }
         }
     }
 }

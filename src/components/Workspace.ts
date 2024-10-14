@@ -1,10 +1,11 @@
-import Layer from "@components/Layer.ts";
 import '@styles/Workspace.css'
 import {Layers} from "@components/Layers.ts";
 
 export class Workspace {
     $el: HTMLElement
     $content: HTMLElement
+    $canvasContainer: HTMLElement
+    layers: Layers
 
     constructor() {
         this.$el = document.createElement('section')
@@ -15,13 +16,21 @@ export class Workspace {
             <h2>Workspace</h2>
         `
 
-        const imageCanvas = new Layer({type: 'image'})
-        const layers = new Layers()
+        const canvasContainer= this.$canvasContainer = document.createElement('div')//new Layer({type: 'image'})
+        canvasContainer.classList.add('canvas-container')
+        this.layers = new Layers()
 
-        this.$content.appendChild(layers.el)
-        this.$content.appendChild(imageCanvas.el)
+        this.$content.appendChild(this.layers.el)
+        this.$content.appendChild(canvasContainer)
+
+        this.$el.addEventListener("change", this.updateImageDisplay);
 
         this.$el.appendChild(this.$content)
+    }
+
+    updateImageDisplay (ev: Event) {
+        console.log('updateImageDisplay', ev)
+        //this.layers.
     }
 
     get el() {
