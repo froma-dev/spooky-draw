@@ -7,7 +7,8 @@ export default defineConfig({
             '@components': path.resolve(__dirname, 'src/components'),
             '@styles': path.resolve(__dirname, 'src/styles'),
             '@services': path.resolve(__dirname, 'src/services'),
-            '@icons': path.resolve(__dirname, 'src/icons')
+            '@icons': path.resolve(__dirname, 'src/icons'),
+            '@utils': path.resolve(__dirname, 'src/utils'),
         }
     }
 });
