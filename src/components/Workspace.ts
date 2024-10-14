@@ -30,6 +30,7 @@ export class Workspace {
         this.$content.appendChild(this.$canvasContainer)
 
         this.$el.addEventListener("change", (ev: Event) => this.onFileInputChange(ev));
+        document.addEventListener("drawchange", ((ev: CustomEvent) => this.updateCanvasDisplay(ev)) as EventListener);
 
         this.$el.appendChild(this.$content)
     }
@@ -100,6 +101,11 @@ export class Workspace {
 
         if (!src) return
         imageEl.src = src
+    }
+
+    updateCanvasDisplay (ev: CustomEvent) {
+        console.log('will update canvas display', ev.detail)
+        this.layers.updateCanvasDisplay(ev.detail)
     }
 
     mergeCanvasLayers() {

@@ -69,6 +69,7 @@ export default class Layer {
     }
 
     stopDrawing() {
+        if (this.isDrawing) document.dispatchEvent(new CustomEvent('drawchange', {detail: this.$el}))
         this.isDrawing = false
         this.$el.removeEventListener('mousemove', this.draw)
     }
@@ -98,8 +99,6 @@ export default class Layer {
             ;[this.lastX, this.lastY] = [offsetX, offsetY]
             return
         }
-
-        console.log(`${offsetX}, ${this.lastX}y${this.lastY}`)
 
         if (!this.imageData) return
 

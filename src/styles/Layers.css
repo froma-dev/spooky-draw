@@ -68,6 +68,9 @@
         &.--canvas {
             border: 2px solid var(--gray);
 
+            .__background {
+                background-color: var(--gray);
+            }
             .__icon {
                 opacity: 0;
             }

@@ -74,12 +74,21 @@ export default class Layers {
         const layer = document.createElement('div')
         layer.classList.add('layer', '--canvas')
         layer.innerHTML = `
+                <img class="__background" src="/skull.svg" alt="canvas background"/>
                 <div>
                     <span class="__icon">${TrashFilled}${Eye}</span>
                 </div>
         `
 
         this.$el.appendChild(layer)
+    }
+
+    updateCanvasDisplay (canvas: HTMLCanvasElement) {
+        const backgroundImage: HTMLImageElement | null = this.$el.querySelector('.__background')
+
+        if (!backgroundImage) return
+
+        backgroundImage.src = canvas.toDataURL("image/png", 1.0)
     }
 
     get el() {
