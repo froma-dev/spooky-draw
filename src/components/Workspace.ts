@@ -1,5 +1,5 @@
 import '@styles/Workspace.css'
-import {Layers} from "@components/Layers.ts";
+import Layers from "@components/Layers.ts";
 import Layer from "@components/Layer.ts";
 import {isValidImgFileType} from "@utils/utils.ts";
 import ImageLayer from "@components/ImageLayer.ts";
@@ -60,24 +60,27 @@ export class Workspace {
         const src = this.retrieveSrc(target)
         if (!src) return
 
-        const img = new Image()
-        this.layers.setImageDisplay({
-            image: {
-                src,
-                $el: img
-            }
-        })
+        this.setImageLayer(src)
+        this.setCanvasLayer()
+    }
 
+    setImageLayer(src: string) {
+        const img = new Image()
+        const image = {
+            src,
+            $el: img
+        }
         const imageLayer = new ImageLayer({
             type: 'image',
-            image: {
-                src,
-                $el: img
-            }
+            image
         })
 
+        this.layers.setImageDisplay({image})
         this.$canvasContainer.appendChild(imageLayer.el)
         this.canvasLayers.push(imageLayer)
+    }
+
+    setCanvasLayer() {
         this.layers.setCanvasLayer()
         this.layers.setEmptyCanvasLayer()
     }

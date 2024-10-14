@@ -1,14 +1,14 @@
 import "@styles/Layers.css"
 import {Eye, PlusIcon, TrashFilled} from "@icons/Icon.ts";
 
-interface ImageDisplayParams {
+export interface ImageDisplayParams {
     image: {
         src: string,
         $el: HTMLImageElement
     }
 }
 
-export class Layers {
+export default class Layers {
     $el: HTMLElement
     $imageLayer: HTMLElement
     $fileInput: HTMLInputElement
