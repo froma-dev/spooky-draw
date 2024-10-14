@@ -9,7 +9,8 @@ export class Workspace {
     $content: HTMLElement
     $canvasContainer: HTMLElement
     layers: Layers
-    canvasLayers: Layer[] | ImageLayer[]
+    canvasLayers: Layer[]
+    mergedCanvas: Layer | null = null
 
     constructor() {
         this.$el = document.createElement('section')
@@ -84,9 +85,10 @@ export class Workspace {
         const canvasLayer = new Layer({type: 'canvas'})
 
         // Empty canvas
-        this.layers.setCanvasDisplay()
         canvasLayer.setCanvasSize(this.$canvasContainer.clientWidth, this.$canvasContainer.clientHeight)
+        this.layers.setCanvasDisplay()
         this.$canvasContainer.appendChild(canvasLayer.el)
+        this.canvasLayers.push(canvasLayer)
 
         // New canvas
         this.layers.setEmptyCanvasLayer()
@@ -98,6 +100,33 @@ export class Workspace {
 
         if (!src) return
         imageEl.src = src
+    }
+
+    mergeCanvasLayers() {
+        let mergedCanvasLayers = this.mergedCanvas = new Layer({type: 'canvas'})
+        const ctxMergedCanvasLayers = mergedCanvasLayers.el.getContext('2d')
+        mergedCanvasLayers.setCanvasSize(this.$canvasContainer.clientWidth, this.$canvasContainer.clientHeight)
+
+        this.canvasLayers.forEach(canvasLayer => {
+            ctxMergedCanvasLayers?.drawImage(canvasLayer.el, 0, 0)
+        })
+    }
+
+    saveCanvas() {
+        const $canvas = this.mergedCanvas?.el
+
+        $canvas?.toBlob((blob) => {
+            if (!blob) return
+
+            const blobUrl = URL.createObjectURL(blob)
+            const downloadLink = document.createElement('a')
+
+            downloadLink.href = blobUrl
+            downloadLink.download = 'masterpiece.webp'
+            downloadLink.click()
+
+            URL.revokeObjectURL(blobUrl)
+        }, 'image/webp')
     }
 
     get el() {
