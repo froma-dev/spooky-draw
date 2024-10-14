@@ -68,6 +68,19 @@ export class Layers {
         console.log('updateImageDisplay')
     }
 
+    setEmptyCanvasLayer () {
+        const layer = document.createElement('div')
+        layer.classList.add('layer', '--add')
+        layer.innerHTML = `
+                <label for="image_upload">
+                    <span class="__icon">${PlusIcon}</span>
+                    <span class="text">Add canvas</span>
+                </label>
+        `
+
+        this.$el.appendChild(layer)
+    }
+
     isValidFileType (fileType: string) {
         return fileTypes.includes(fileType)
     }

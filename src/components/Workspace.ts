@@ -48,6 +48,7 @@ export class Workspace {
 
             this.$canvasContainer.appendChild(imageLayer.el)
             this.canvasLayers.push(imageLayer)
+            this.layers.setEmptyCanvasLayer()
         } else {
 
         }
