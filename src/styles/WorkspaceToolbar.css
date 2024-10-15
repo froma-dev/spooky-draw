@@ -1,0 +1,25 @@
+.__workspace-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .__color-picker {
+
+    }
+
+    .__prompt-bar {
+        display: flex;
+
+        .__button {
+            height: 100%;
+            margin: 0;
+            padding: 0.5rem 1rem;
+            background: none;
+            border: 1px solid var(--gray);
+
+            span {
+                padding: 1rem 2rem;
+            }
+        }
+    }
+}

@@ -3,6 +3,7 @@ import Layers from "@components/Layers.ts";
 import Layer from "@components/Layer.ts";
 import {isValidImgFileType} from "@utils/utils.ts";
 import ImageLayer from "@components/ImageLayer.ts";
+import WorkspaceToolBar from "@components/WorkspaceToolBar.ts";
 
 export class Workspace {
     $el: HTMLElement
@@ -32,7 +33,20 @@ export class Workspace {
         this.$el.addEventListener("change", (ev: Event) => this.onFileInputChange(ev));
         document.addEventListener("drawchange", ((ev: CustomEvent) => this.updateCanvasDisplay(ev)) as EventListener);
 
+        const workspaceToolbar = new WorkspaceToolBar()
+        const $workspaceToolbar = workspaceToolbar.el
+        $workspaceToolbar.addEventListener("click", (ev: Event) => this.submitPrompt(ev))
+
         this.$el.appendChild(this.$content)
+        this.$el.appendChild($workspaceToolbar)
+    }
+
+    submitPrompt (ev: Event) {
+        const $target = ev.target as HTMLElement
+
+        if ($target?.id === 'submit-prompt') {
+
+        }
     }
 
     onFileInputChange(ev: Event) {
@@ -92,7 +106,7 @@ export class Workspace {
         this.canvasLayers.push(canvasLayer)
 
         // New canvas
-        this.layers.setEmptyCanvasLayer()
+        // this.layers.setEmptyCanvasLayer()
     }
 
     updateImageDisplay(target: HTMLInputElement) {
