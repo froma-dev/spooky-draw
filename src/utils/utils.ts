@@ -7,3 +7,17 @@ const imgFileTypes = [
 ]
 
 export const isValidImgFileType = (fileType: string) => imgFileTypes.includes(fileType)
+
+export const getCanvasBlob = async ($canvas: HTMLCanvasElement) => {
+    const blobPromise = new Promise<Blob>((resolve, reject) => {
+        $canvas.toBlob((blob) => {
+            if (blob) {
+                resolve(blob)
+            } else {
+                reject(new Error("No image info"))
+            }
+        }, 'image/jpg')
+    })
+
+    return Promise.resolve(blobPromise)
+}

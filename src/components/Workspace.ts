@@ -1,9 +1,10 @@
 import '@styles/Workspace.css'
 import Layers from "@components/Layers.ts";
 import Layer from "@components/Layer.ts";
-import {isValidImgFileType} from "@utils/utils.ts";
+import {isValidImgFileType, getCanvasBlob} from "@utils/utils.ts";
 import ImageLayer from "@components/ImageLayer.ts";
 import WorkspaceToolBar from "@components/WorkspaceToolBar.ts";
+import {cloud} from "@services/Cloud.ts";
 
 export class Workspace {
     $el: HTMLElement
@@ -39,14 +40,6 @@ export class Workspace {
 
         this.$el.appendChild(this.$content)
         this.$el.appendChild($workspaceToolbar)
-    }
-
-    submitPrompt (ev: Event) {
-        const $target = ev.target as HTMLElement
-
-        if ($target?.id === 'submit-prompt') {
-
-        }
     }
 
     onFileInputChange(ev: Event) {
@@ -117,7 +110,7 @@ export class Workspace {
         imageEl.src = src
     }
 
-    updateCanvasDisplay (ev: CustomEvent) {
+    updateCanvasDisplay(ev: CustomEvent) {
         console.log('will update canvas display', ev.detail)
         this.layers.updateCanvasDisplay(ev.detail)
     }
@@ -134,10 +127,9 @@ export class Workspace {
 
     saveCanvas() {
         const $canvas = this.mergedCanvas?.el
+        if (!$canvas) return
 
-        $canvas?.toBlob((blob) => {
-            if (!blob) return
-
+        getCanvasBlob($canvas).then(blob => {
             const blobUrl = URL.createObjectURL(blob)
             const downloadLink = document.createElement('a')
 
@@ -146,7 +138,33 @@ export class Workspace {
             downloadLink.click()
 
             URL.revokeObjectURL(blobUrl)
-        }, 'image/webp')
+        })
+    }
+
+    submitPrompt(ev: Event) {
+        const $target = ev.target as HTMLElement
+
+        if ($target?.id === 'submit-prompt') this.uploadFile()
+    }
+
+    uploadFile() {
+        this.mergeCanvasLayers()
+
+        if (this.mergedCanvas) {
+            getCanvasBlob(this.mergedCanvas.el)
+                .then(blob => {
+                    const formData = new FormData()
+                    formData.append('image', blob, 'randomfile.jpg')
+
+                    return formData
+                })
+                .then((formData: FormData) => {
+                    return cloud.uploadFile(formData)
+                })
+                .then(uploadResult => {
+                    console.log('received upload result', uploadResult)
+                })
+        }
     }
 
     get el() {
