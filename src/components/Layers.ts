@@ -21,7 +21,7 @@ export default class Layers {
         this.$fileInput.setAttribute('type', 'file')
         this.$fileInput.setAttribute('id', 'image_upload')
         this.$fileInput.setAttribute('name', 'image_upload')
-        this.$fileInput.setAttribute('accept', '.jpg .jpeg .png .webp .svg')
+        this.$fileInput.setAttribute('accept', '.jpg, .jpeg, .png, .webp, .svg')
         this.$fileInput.classList.add('input-file')
 
         this.$el.innerHTML = `

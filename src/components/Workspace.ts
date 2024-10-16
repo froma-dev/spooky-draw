@@ -150,21 +150,17 @@ export class Workspace {
     uploadFile() {
         this.mergeCanvasLayers()
 
-        if (this.mergedCanvas) {
-            getCanvasBlob(this.mergedCanvas.el)
-                .then(blob => {
-                    const formData = new FormData()
-                    formData.append('image', blob, 'randomfile.jpg')
-
-                    return formData
-                })
-                .then((formData: FormData) => {
-                    return cloud.uploadFile(formData)
-                })
-                .then(uploadResult => {
-                    console.log('received upload result', uploadResult)
-                })
+        if (!this.mergedCanvas) {
+            return
         }
+
+        getCanvasBlob(this.mergedCanvas.el)
+            .then((blob: Blob) => {
+                return cloud.uploadFile(blob)
+            })
+            .then(uploadResult => {
+                console.log('received upload result', uploadResult)
+            })
     }
 
     get el() {

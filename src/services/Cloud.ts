@@ -23,15 +23,15 @@ class Cloud {
         return Cloud.api
     }
 
-    async uploadFile (formData: FormData) {
-        const uploadResult = fetch(`${CLOUD_BASE_URL}/cloudy/upload`, {
+    async uploadFile (blob: Blob) {
+        const response = await fetch(`${CLOUD_BASE_URL}/cloudy/upload`, {
             method: 'POST',
-            body: JSON.stringify({
-                data: ""
-            })
-        }).then(async res => await res.json())
+            headers: { 'Content-Type': blob.type || 'application/octet-stream' },
+            body: blob
+        })
+        const uploadResult = await response.json()
 
-        console.log('upload result' , uploadResult)
+        console.log('upload result' , uploadResult, response)
     }
 }
 
