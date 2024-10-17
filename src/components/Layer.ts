@@ -45,8 +45,8 @@ export default class Layer {
             canvas.addEventListener('mousedown', (ev: MouseEvent) => this.startDrawingCursor(ev))
             canvas.addEventListener('mouseup', () => this.stopDrawing())
             canvas.addEventListener('mouseleave', () => this.stopDrawing())
-            canvas.addEventListener('mousemove', (ev: MouseEvent) => this.updateCoords(ev))
-            canvas.addEventListener('mouseleave', () => this.clearCoords())
+            //canvas.addEventListener('mousemove', (ev: MouseEvent) => this.updateCoords(ev))
+            //canvas.addEventListener('mouseleave', () => this.clearCoords())
         }
     }
 
@@ -91,6 +91,11 @@ export default class Layer {
         const {offsetX, offsetY} = ev
 
         if (this.mode === MODES.DRAW || this.mode === MODES.ERASE) {
+            this.ctx.lineWidth = 15
+            this.ctx.imageSmoothingEnabled = true;
+            this.ctx.lineJoin = 'round'
+            this.ctx.lineCap = 'round'
+            this.ctx.strokeStyle = "#666EFF"
             this.ctx.beginPath()
             this.ctx.moveTo(this.lastX, this.lastY)
             this.ctx.lineTo(offsetX, offsetY)

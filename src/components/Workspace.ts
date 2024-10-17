@@ -9,7 +9,6 @@ import {storage} from "@services/LocalStorage.ts";
 
 export class Workspace {
     $el: HTMLElement
-    $content: HTMLElement
     $canvasContainer: HTMLElement
     layers: Layers
     canvasLayers: Layer[]
@@ -17,8 +16,6 @@ export class Workspace {
 
     constructor() {
         this.$el = document.createElement('section')
-        this.$content = document.createElement('div')
-        this.$content.classList.add('__content')
         this.$el.classList.add('workspace')
         this.$el.innerHTML = `
             <h2>Workspace</h2>
@@ -29,9 +26,6 @@ export class Workspace {
         this.layers = new Layers()
         this.canvasLayers = []
 
-        this.$content.appendChild(this.layers.el)
-        this.$content.appendChild(this.$canvasContainer)
-
         this.$el.addEventListener("change", (ev: Event) => this.onFileInputChange(ev));
         document.addEventListener("drawchange", ((ev: CustomEvent) => this.updateCanvasDisplay(ev)) as EventListener);
 
@@ -39,7 +33,8 @@ export class Workspace {
         const $workspaceToolbar = workspaceToolbar.el
         $workspaceToolbar.addEventListener("click", (ev: Event) => this.submitPrompt(ev))
 
-        this.$el.appendChild(this.$content)
+        this.$el.appendChild(this.layers.el)
+        this.$el.appendChild(this.$canvasContainer)
         this.$el.appendChild($workspaceToolbar)
     }
 
@@ -162,7 +157,19 @@ export class Workspace {
     }
 
     transformImage(imageData: ImageData) {
-        cloud.transformImage(imageData)
+        const transformedImageUrl = cloud.transformImage(imageData)
+
+        const $transformedImg = document.createElement('img')
+        $transformedImg.src = transformedImageUrl
+        $transformedImg.alt = "Transformed image"
+        $transformedImg.onload = () => {
+            console.log('image loaded')
+        }
+        $transformedImg.onerror = () => {
+            console.error('image !loaded')
+        }
+
+        this.$el.appendChild($transformedImg)
     }
 
     saveUploadedReference(uploadResultData: ImageData) {

@@ -1,5 +1,5 @@
 import {Cloudinary as Cld} from "@cloudinary/url-gen"
-import { generativeReplace } from "@cloudinary/url-gen/actions/effect"
+import {generativeBackgroundReplace} from "@cloudinary/url-gen/actions/effect"
 
 const CLOUD_BASE_URL = import.meta.env.VITE_CLOUD_BASE_URL
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
@@ -82,15 +82,16 @@ class Cloud {
             } as IUploadUnsuccessful
         }
     }
-    async transformImage(imageData: SuccessfulData) {
+
+    transformImage(imageData: SuccessfulData) {
         const myImage = this.cloudinary.image(imageData.publicId);
 
-        myImage
-            .effect(
-                generativeReplace()
-                    .from("sweater")
-                    .to("leather jacket with pockets")
-            );
+        myImage.effect(generativeBackgroundReplace().prompt("A spooky halloween theme dark and foggy"));
+
+        console.log('myImage',myImage);
+        console.log('myImage',myImage.toURL());
+
+        return myImage.toURL()
     }
 }
 

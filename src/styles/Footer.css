@@ -1,0 +1,25 @@
+footer {
+    .content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        a {
+            line-height: 0;
+            color: var(--gray);
+            transition: transform 0.2s ease-in-out, fill 0.2s ease-in-out, color 0.2s ease-in-out;
+
+            &:hover {
+                transform: scale(1.1);
+            }
+
+            svg {
+                transition: transform 0.2s ease-in-out, fill 0.2s ease-in-out, color 0.2s ease-in-out;
+
+                &:hover {
+                    fill: var(--eerie-black-low-opacity);
+                }
+            }
+        }
+    }
+}
