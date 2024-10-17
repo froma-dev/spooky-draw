@@ -13,6 +13,7 @@ export class Workspace {
     layers: Layers
     canvasLayers: Layer[]
     mergedCanvas: Layer | null = null
+    workspaceToolbar: WorkspaceToolBar
 
     constructor() {
         this.$el = document.createElement('section')
@@ -29,7 +30,7 @@ export class Workspace {
         this.$el.addEventListener("change", (ev: Event) => this.onFileInputChange(ev));
         document.addEventListener("drawchange", ((ev: CustomEvent) => this.updateCanvasDisplay(ev)) as EventListener);
 
-        const workspaceToolbar = new WorkspaceToolBar()
+        const workspaceToolbar = this.workspaceToolbar = new WorkspaceToolBar()
         const $workspaceToolbar = workspaceToolbar.el
         $workspaceToolbar.addEventListener("click", (ev: Event) => this.submitPrompt(ev))
 
@@ -156,25 +157,19 @@ export class Workspace {
         this.mergeCanvasLayers()
         if (!this.mergedCanvas) return
 
+        this.workspaceToolbar.appendOutputStatus({status: 'Uploading your masterpiece...', icon: 'loading'})
+
         const blob = await getCanvasBlob(this.mergedCanvas.el)
 
         return await cloud.uploadFile(blob)
     }
 
-    transformImage(imageData: ImageData, prompt: string) {
-        const transformedImageUrl = cloud.transformImage({imageData, prompt})
-
-        const $transformedImg = document.createElement('img')
-        $transformedImg.src = transformedImageUrl
-        $transformedImg.alt = "Transformed image"
-        $transformedImg.onload = () => {
-            console.log('image loaded')
-        }
-        $transformedImg.onerror = () => {
-            console.error('image !loaded')
-        }
-
-        this.$el.appendChild($transformedImg)
+    async transformImage(imageData: ImageData, prompt: string) {
+        const src = cloud.transformImage({imageData, prompt})
+        this.workspaceToolbar.appendOutputStatus({status: `Transforming image into: ${prompt}` , icon: 'loading'})
+        this.workspaceToolbar.appendOutputImage({src})
+            .then(() => {})
+            .catch(() => {console.error('Failed to transform image into', prompt)})
     }
 
     saveUploadedReference(uploadResultData: ImageData) {
