@@ -1,4 +1,5 @@
-import {Cloudinary as Cld} from "@cloudinary/url-gen";
+import {Cloudinary as Cld} from "@cloudinary/url-gen"
+import { generativeReplace } from "@cloudinary/url-gen/actions/effect"
 
 const CLOUD_BASE_URL = import.meta.env.VITE_CLOUD_BASE_URL
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
@@ -80,6 +81,16 @@ class Cloud {
                 }
             } as IUploadUnsuccessful
         }
+    }
+    async transformImage(imageData: SuccessfulData) {
+        const myImage = this.cloudinary.image(imageData.publicId);
+
+        myImage
+            .effect(
+                generativeReplace()
+                    .from("sweater")
+                    .to("leather jacket with pockets")
+            );
     }
 }
 

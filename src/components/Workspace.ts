@@ -4,7 +4,7 @@ import Layer from "@components/Layer.ts";
 import {isValidImgFileType, getCanvasBlob} from "@utils/utils.ts";
 import ImageLayer from "@components/ImageLayer.ts";
 import WorkspaceToolBar from "@components/WorkspaceToolBar.ts";
-import {cloud, SuccessfulData} from "@services/Cloud.ts";
+import {cloud, SuccessfulData as ImageData} from "@services/Cloud.ts";
 import {storage} from "@services/LocalStorage.ts";
 
 export class Workspace {
@@ -155,15 +155,20 @@ export class Workspace {
         const uploadResult = await cloud.uploadFile(blob)
 
         if (uploadResult.success) {
-            const data = uploadResult.data as SuccessfulData
+            const data = uploadResult.data as ImageData
             this.saveUploadedReference(data)
+            this.transformImage(data)
         }
     }
 
-    saveUploadedReference(uploadResultData: SuccessfulData) {
+    transformImage(imageData: ImageData) {
+        cloud.transformImage(imageData)
+    }
+
+    saveUploadedReference(uploadResultData: ImageData) {
         const {assetId} = uploadResultData
 
-        storage.setItem<SuccessfulData>(assetId, uploadResultData)
+        storage.setItem<ImageData>(assetId, uploadResultData)
     }
 
     get el() {
