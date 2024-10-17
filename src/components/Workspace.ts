@@ -4,7 +4,8 @@ import Layer from "@components/Layer.ts";
 import {isValidImgFileType, getCanvasBlob} from "@utils/utils.ts";
 import ImageLayer from "@components/ImageLayer.ts";
 import WorkspaceToolBar from "@components/WorkspaceToolBar.ts";
-import {cloud} from "@services/Cloud.ts";
+import {cloud, SuccessfulData} from "@services/Cloud.ts";
+import {storage} from "@services/LocalStorage.ts";
 
 export class Workspace {
     $el: HTMLElement
@@ -125,20 +126,19 @@ export class Workspace {
         })
     }
 
-    saveCanvas() {
+    async saveCanvas() {
         const $canvas = this.mergedCanvas?.el
         if (!$canvas) return
 
-        getCanvasBlob($canvas).then(blob => {
-            const blobUrl = URL.createObjectURL(blob)
-            const downloadLink = document.createElement('a')
+        const blob = await getCanvasBlob($canvas)
+        const blobUrl = URL.createObjectURL(blob)
+        const downloadLink = document.createElement('a')
 
-            downloadLink.href = blobUrl
-            downloadLink.download = 'masterpiece.webp'
-            downloadLink.click()
+        downloadLink.href = blobUrl
+        downloadLink.download = 'masterpiece.webp'
+        downloadLink.click()
 
-            URL.revokeObjectURL(blobUrl)
-        })
+        URL.revokeObjectURL(blobUrl)
     }
 
     submitPrompt(ev: Event) {
@@ -147,20 +147,23 @@ export class Workspace {
         if ($target?.id === 'submit-prompt') this.uploadFile()
     }
 
-    uploadFile() {
+    async uploadFile() {
         this.mergeCanvasLayers()
+        if (!this.mergedCanvas) return
 
-        if (!this.mergedCanvas) {
-            return
+        const blob = await getCanvasBlob(this.mergedCanvas.el)
+        const uploadResult = await cloud.uploadFile(blob)
+
+        if (uploadResult.success) {
+            const data = uploadResult.data as SuccessfulData
+            this.saveUploadedReference(data)
         }
+    }
 
-        getCanvasBlob(this.mergedCanvas.el)
-            .then((blob: Blob) => {
-                return cloud.uploadFile(blob)
-            })
-            .then(uploadResult => {
-                console.log('received upload result', uploadResult)
-            })
+    saveUploadedReference(uploadResultData: SuccessfulData) {
+        const {assetId} = uploadResultData
+
+        storage.setItem<SuccessfulData>(assetId, uploadResultData)
     }
 
     get el() {
