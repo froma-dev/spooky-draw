@@ -30,6 +30,11 @@ interface IUploadSuccessful {
     data: SuccessfulData
 }
 
+interface ITransformImageParams {
+    imageData: SuccessfulData,
+    prompt: string
+}
+
 class Cloud {
     private static api: Cloud
     cloudinary: Cld
@@ -83,13 +88,14 @@ class Cloud {
         }
     }
 
-    transformImage(imageData: SuccessfulData) {
-        const myImage = this.cloudinary.image(imageData.publicId);
+    transformImage({imageData, prompt}: ITransformImageParams) {
+        const myImage = this.cloudinary.image(imageData.publicId)
+        const generativePrompt = `${prompt} make it spooky halloween themed`
 
-        myImage.effect(generativeBackgroundReplace().prompt("A spooky halloween theme dark and foggy"));
+        myImage.effect(generativeBackgroundReplace().prompt(generativePrompt))
 
-        console.log('myImage',myImage);
-        console.log('myImage',myImage.toURL());
+        console.log('myImage',myImage)
+        console.log('myImage',myImage.toURL())
 
         return myImage.toURL()
     }

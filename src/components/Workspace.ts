@@ -21,7 +21,7 @@ export class Workspace {
             <h2>Workspace</h2>
         `
 
-        this.$canvasContainer = document.createElement('div')//new Layer({type: 'image'})
+        this.$canvasContainer = document.createElement('div')
         this.$canvasContainer.classList.add('canvas-container')
         this.layers = new Layers()
         this.canvasLayers = []
@@ -139,7 +139,17 @@ export class Workspace {
     submitPrompt(ev: Event) {
         const $target = ev.target as HTMLElement
 
-        if ($target?.id === 'submit-prompt') this.uploadFile()
+        if ($target?.id === 'submit-prompt') {
+            const $input = $target.previousElementSibling as HTMLInputElement
+
+            this.uploadFile().then(uploadResult => {
+                if (uploadResult?.success) {
+                    const data = uploadResult.data as ImageData
+                    this.saveUploadedReference(data)
+                    this.transformImage(data, $input?.value ?? 'A spooky halloween themed background')
+                }
+            })
+        }
     }
 
     async uploadFile() {
@@ -147,17 +157,12 @@ export class Workspace {
         if (!this.mergedCanvas) return
 
         const blob = await getCanvasBlob(this.mergedCanvas.el)
-        const uploadResult = await cloud.uploadFile(blob)
 
-        if (uploadResult.success) {
-            const data = uploadResult.data as ImageData
-            this.saveUploadedReference(data)
-            this.transformImage(data)
-        }
+        return await cloud.uploadFile(blob)
     }
 
-    transformImage(imageData: ImageData) {
-        const transformedImageUrl = cloud.transformImage(imageData)
+    transformImage(imageData: ImageData, prompt: string) {
+        const transformedImageUrl = cloud.transformImage({imageData, prompt})
 
         const $transformedImg = document.createElement('img')
         $transformedImg.src = transformedImageUrl
