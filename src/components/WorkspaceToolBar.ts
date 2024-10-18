@@ -1,11 +1,18 @@
 import "@styles/WorkspaceToolbar.css"
-import {LoadingIcon} from "@icons/Icon.ts";
+import {CircleCheck, CircleExclamation, LoadingIcon} from "@icons/Icon.ts";
 
 const mappedStatusIcons = {
-    'loading': LoadingIcon
+    'loading': LoadingIcon,
+    'success': CircleCheck,
+    'error': CircleExclamation
 }
 
-type Status = 'loading' | 'error' | 'loaded'
+type Status = 'loading' | 'error' | 'success'
+
+interface IStatusParams {
+    status: string,
+    icon: Status
+}
 
 export default class WorkspaceToolBar {
     $el: HTMLElement;
@@ -46,7 +53,7 @@ export default class WorkspaceToolBar {
 
     }
 
-    async appendOutputImage({src}: {src: string}) {
+    async appendOutputImage({src}: { src: string }) {
         return new Promise<void>((resolve, reject) => {
             const $transformedImg = document.createElement('img')
             $transformedImg.onload = () => resolve()
@@ -57,10 +64,10 @@ export default class WorkspaceToolBar {
         })
     }
 
-    appendOutputStatus({status, icon}: {status: string, icon: Status}) {
+    appendOutputStatus({status, icon}: IStatusParams) {
         const $status = document.createElement('div')
         let iconStatus = ''
-        $status.classList.add('status')
+        $status.classList.add('status', `--${icon}`)
 
         if (icon === 'loading') {
             iconStatus = mappedStatusIcons.loading
@@ -74,5 +81,23 @@ export default class WorkspaceToolBar {
         this.$outputs.appendChild($status)
     }
 
-    get el() { return this.$el }
+    updatePrevOutputStatus({status, icon}: IStatusParams) {
+        const $statusList = this.$outputs.querySelectorAll('.status')
+        const $lastStatus = $statusList[$statusList.length - 1]
+        let iconStatus = icon === 'success' ? mappedStatusIcons.success : mappedStatusIcons.error
+        const $icon = $lastStatus.querySelector('.icon')
+        const $text = $lastStatus.querySelector('.text')
+
+        $lastStatus.classList.remove('status', `--loading`)
+        $lastStatus.classList.add('status', `--${icon}`)
+
+        if ($icon)
+            $icon.innerHTML = iconStatus
+        if ($text)
+            $text.innerHTML = status
+    }
+
+    get el() {
+        return this.$el
+    }
 }

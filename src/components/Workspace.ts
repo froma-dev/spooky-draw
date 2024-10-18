@@ -146,6 +146,7 @@ export class Workspace {
             this.uploadFile().then(uploadResult => {
                 if (uploadResult?.success) {
                     const data = uploadResult.data as ImageData
+                    this.workspaceToolbar.updatePrevOutputStatus({status: 'Image loaded successfully!', icon: 'success'})
                     this.saveUploadedReference(data)
                     this.transformImage(data, $input?.value ?? 'A spooky halloween themed background')
                 }
@@ -166,10 +167,20 @@ export class Workspace {
 
     async transformImage(imageData: ImageData, prompt: string) {
         const src = cloud.transformImage({imageData, prompt})
-        this.workspaceToolbar.appendOutputStatus({status: `Transforming image into: ${prompt}` , icon: 'loading'})
+        this.workspaceToolbar.appendOutputStatus({status: `Transforming image into: <span class="prompt">${prompt}</span>`, icon: 'loading'})
         this.workspaceToolbar.appendOutputImage({src})
-            .then(() => {})
-            .catch(() => {console.error('Failed to transform image into', prompt)})
+            .then(() => {
+                this.workspaceToolbar.updatePrevOutputStatus({
+                    status: `Image transformed into <span class="prompt">${prompt}</span>`,
+                    icon: 'success'
+                })
+            })
+            .catch(() => {
+                this.workspaceToolbar.updatePrevOutputStatus({
+                    status: `Failed to transform image into <span class="prompt">${prompt}</span>`,
+                    icon: 'error'
+                })
+            })
     }
 
     saveUploadedReference(uploadResultData: ImageData) {
