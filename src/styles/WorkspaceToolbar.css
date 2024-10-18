@@ -11,7 +11,6 @@
     grid-area: toolbar;
     grid-template-columns: 248px 1fr;
 
-
     .inputs {
         display: flex;
         align-items: center;
@@ -25,12 +24,13 @@
         .prompt-bar {
             display: flex;
             gap: 0.5rem;
+            align-items: stretch;
 
             .__input {
                 border-radius: 0.5rem;
                 border: 2px solid var(--eerie-black-low-opacity);
                 transition: border-color 0.2s ease-in-out;
-                font-size: 1rem;
+                font-size: 1.4rem;
                 padding: 0.5rem;
                 width: 500px;
 
@@ -42,7 +42,7 @@
             }
 
             .__button {
-                height: 100%;
+                height: auto;
                 margin: 0;
                 padding: 0.5rem 1rem;
                 background: var(--honeydew);
@@ -52,6 +52,7 @@
                 font-size: 1.25rem;
                 font-weight: 400;
                 transition: background-color 0.2s ease-in-out;
+                line-height: 0;
 
                 &:hover {
                     background-color: var(--eerie-black-low-opacity);
@@ -68,17 +69,46 @@
         display: flex;
         flex-direction: column;
         align-items: flex-start;
+        font-size: 1.5rem;
+        gap: 1rem;
 
         .status {
             display: flex;
             align-items: center;
+            border: 2px solid var(--eerie-black-low-opacity);
+            background: var(--eerie-black-low-opacity);
+            padding: 0.5rem;
+            border-radius: 1rem;
+            gap: 0.5rem;
 
             &.--loading {
-                animation: blink 1s linear infinite;
+                .icon {
+                    animation: spin 4s linear infinite;
+
+                    svg {
+                        color: var(--gray);
+                    }
+                }
+            }
+
+            &.--loaded {
+                .icon {
+                    color: var(--british-racing-green);
+                }
+            }
+
+            &.--error {
+                .icon {
+                    color: var(--engineering-orange);
+                }
             }
 
             .icon {
                 line-height: 0;
+            }
+
+            img {
+                border-radius: 1rem;
             }
         }
     }
