@@ -18,6 +18,7 @@
   --eerie-black-low-opacity: hsla(0, 0%, 18%, 0.68);
   --witch: 	hsl(237, 100%, 70%, 1);
   --gray: hsl(0, 0%, 82%);
+  --green-success: hsl(150deg 64.78% 41.26%);
 
   transition: background-color 0.4s ease-in-out;
 
