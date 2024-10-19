@@ -137,20 +137,23 @@ export class Workspace {
         URL.revokeObjectURL(blobUrl)
     }
 
-    submitPrompt(ev: Event) {
+    async submitPrompt(ev: Event) {
         const $target = ev.target as HTMLElement
 
         if ($target?.id === 'submit-prompt') {
-            const $input = $target.previousElementSibling as HTMLInputElement
+            const inputValue = this.workspaceToolbar.retrieveInputValue()
+            this.workspaceToolbar.clearInputValue()
 
-            this.uploadFile().then(uploadResult => {
-                if (uploadResult?.success) {
-                    const data = uploadResult.data as ImageData
-                    this.workspaceToolbar.updatePrevOutputStatus({status: 'Image loaded successfully!', icon: 'success'})
-                    this.saveUploadedReference(data)
-                    this.transformImage(data, $input?.value ?? 'A spooky halloween themed background')
-                }
-            })
+            const uploadResult = await this.uploadFile()
+
+            if (uploadResult?.success) {
+                const data = uploadResult.data as ImageData
+                this.workspaceToolbar.updatePrevOutputStatus({status: 'Image uploaded successfully!', icon: 'success'})
+                this.saveUploadedReference(data)
+                this.transformImage(data, inputValue)
+            } else {
+                this.workspaceToolbar.updatePrevOutputStatus({status: 'Image upload failed', icon: 'error'})
+            }
         }
     }
 
@@ -159,7 +162,6 @@ export class Workspace {
         if (!this.mergedCanvas) return
 
         this.workspaceToolbar.appendOutputStatus({status: 'Uploading your masterpiece...', icon: 'loading'})
-
         const blob = await getCanvasBlob(this.mergedCanvas.el)
 
         return await cloud.uploadFile(blob)
@@ -167,8 +169,9 @@ export class Workspace {
 
     async transformImage(imageData: ImageData, prompt: string) {
         const src = cloud.transformImage({imageData, prompt})
+        const {secureUrl} = imageData
         this.workspaceToolbar.appendOutputStatus({status: `Transforming image into: <span class="prompt">${prompt}</span>`, icon: 'loading'})
-        this.workspaceToolbar.appendOutputImage({src})
+        this.workspaceToolbar.appendOutputImage({src, fallback: secureUrl})
             .then(() => {
                 this.workspaceToolbar.updatePrevOutputStatus({
                     status: `Image transformed into <span class="prompt">${prompt}</span>`,

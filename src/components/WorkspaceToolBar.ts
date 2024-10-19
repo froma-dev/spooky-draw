@@ -19,6 +19,7 @@ export default class WorkspaceToolBar {
     $coords: HTMLElement;
     $promptBar: HTMLDivElement
     $outputs: HTMLDivElement
+    $promptInput: HTMLInputElement
 
     constructor() {
         this.$el = document.createElement('div')
@@ -40,9 +41,10 @@ export default class WorkspaceToolBar {
         `
 
         this.$promptBar.innerHTML = `
-            <input type="text" placeholder="Type your prompt" class="__input" />
-            <button id="submit-prompt" class="__button">Submit</button>
+            <input type="text" placeholder="Type your prompt" class="input" />
+            <button id="submit-prompt" class="button">Submit</button>
         `
+        this.$promptInput = this.$promptBar.querySelector('.input')!
         $inputs.appendChild(this.$coords)
         $inputs.appendChild(this.$promptBar)
         this.$el.appendChild($inputs)
@@ -53,11 +55,15 @@ export default class WorkspaceToolBar {
 
     }
 
-    async appendOutputImage({src}: { src: string }) {
+    async appendOutputImage({src}: { src: string, fallback: string }) {
         return new Promise<void>((resolve, reject) => {
             const $transformedImg = document.createElement('img')
+
             $transformedImg.onload = () => resolve()
-            $transformedImg.onerror = () => reject()
+            $transformedImg.onerror = () => {
+                $transformedImg.src = src
+                reject()
+            }
             $transformedImg.src = src
             $transformedImg.alt = "Transformed image"
             this.$outputs.appendChild($transformedImg)
@@ -95,6 +101,14 @@ export default class WorkspaceToolBar {
             $icon.innerHTML = iconStatus
         if ($text)
             $text.innerHTML = status
+    }
+
+    retrieveInputValue() {
+        return this.$promptInput.value
+    }
+
+    clearInputValue() {
+        this.$promptInput.value = ''
     }
 
     get el() {

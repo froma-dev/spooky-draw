@@ -2,14 +2,12 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
     border: 1px solid var(--eerie-black-low-opacity);
     border-radius: 0.5rem;
     padding: 0.5rem;
     margin-top: 1rem;
     justify-content: space-between;
     grid-area: toolbar;
-    grid-template-columns: 248px 1fr;
 
     .inputs {
         display: flex;
@@ -26,7 +24,7 @@
             gap: 0.5rem;
             align-items: stretch;
 
-            .__input {
+            .input {
                 border-radius: 0.5rem;
                 border: 2px solid var(--eerie-black-low-opacity);
                 transition: border-color 0.2s ease-in-out;
@@ -41,7 +39,7 @@
                 }
             }
 
-            .__button {
+            .button {
                 height: auto;
                 margin: 0;
                 padding: 0.5rem 1rem;
@@ -71,6 +69,7 @@
         align-items: flex-start;
         font-size: 1.5rem;
         gap: 1rem;
+        width: 100%;
 
         .status {
             display: flex;
@@ -94,10 +93,10 @@
             &.--success {
                 .icon {
                     animation: scale-in 0.5s ease-in-out forwards;
-                    color: var(--british-racing-green);
+                    color: var(--green-success);
 
                     svg > path {
-                        stroke-width: 2px;
+                        stroke-width: 4px;
                     }
                 }
             }
