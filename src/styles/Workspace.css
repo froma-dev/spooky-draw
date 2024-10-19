@@ -6,6 +6,20 @@
     " . toolbar";
     grid-template-columns: 248px 1fr;
 
+    &.stacked {
+        grid-template-areas:
+        "header header"
+        "canvas canvas"
+        "layers layers"
+        "toolbar toolbar";
+
+        .layers {
+            flex-direction: row;
+            height: 248px;
+            width: auto;
+        }
+    }
+
     h2 {
         grid-area: header;
         text-align: left;
@@ -14,6 +28,7 @@
 
     .canvas-container {
         width: 100%;
+        min-height: 43.75rem;
         flex-grow: 1;
         border: 1px solid var(--eerie-black-low-opacity);
         border-radius: 0.5rem;
@@ -24,6 +39,7 @@
         canvas {
             grid-column: 1;
             grid-row: 1;
+            animation: appear 0.5s ease-in forwards;
 
             &.--image {
                 width: 100%;
@@ -31,7 +47,7 @@
             }
 
             &.--canvas {
-                cursor: url("/pencil.svg") 0 20 , auto;
+                cursor: url("/pencil.svg") 0 20, auto;
                 width: 100%;
                 height: 100%;
             }

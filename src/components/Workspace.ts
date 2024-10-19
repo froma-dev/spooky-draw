@@ -17,7 +17,7 @@ export class Workspace {
 
     constructor() {
         this.$el = document.createElement('section')
-        this.$el.classList.add('workspace')
+        this.$el.classList.add('workspace', 'stacked')
         this.$el.innerHTML = `
             <h2>Workspace</h2>
         `
@@ -67,7 +67,7 @@ export class Workspace {
         if (!src) return
 
         this.setImageLayer(src)
-        this.setCanvasLayer()
+        this.setCanvasLayer({selected: true})
     }
 
     setImageLayer(src: string) {
@@ -86,12 +86,12 @@ export class Workspace {
         this.canvasLayers.push(imageLayer)
     }
 
-    setCanvasLayer() {
+    setCanvasLayer({selected}: { selected: boolean }) {
         const canvasLayer = new Layer({type: 'canvas'})
 
         // Empty canvas
         canvasLayer.setCanvasSize(this.$canvasContainer.clientWidth, this.$canvasContainer.clientHeight)
-        this.layers.setCanvasDisplay()
+        this.layers.setCanvasDisplay({selected})
         this.$canvasContainer.appendChild(canvasLayer.el)
         this.canvasLayers.push(canvasLayer)
 

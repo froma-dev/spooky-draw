@@ -70,9 +70,9 @@ export default class Layers {
         this.$el.appendChild(layer)
     }
 
-    setCanvasDisplay () {
+    setCanvasDisplay ({selected = false}: { selected: boolean }) {
         const layer = document.createElement('div')
-        layer.classList.add('layer', '--canvas')
+        layer.classList.add('layer', '--canvas', selected ? 'selected' : '')
         layer.innerHTML = `
                 <img class="__background" src="/skull.svg" alt="canvas background"/>
                 <div>

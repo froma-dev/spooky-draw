@@ -43,7 +43,7 @@
                 height: auto;
                 margin: 0;
                 padding: 0.5rem 1rem;
-                background: var(--honeydew);
+                background: var(--gray);
                 color: var(--night);
                 border: none;
                 border-radius: 0.5rem;
@@ -53,7 +53,7 @@
                 line-height: 0;
 
                 &:hover {
-                    background-color: var(--eerie-black-low-opacity);
+                    background-color: #f6f6f6;
                 }
 
                 span {

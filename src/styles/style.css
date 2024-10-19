@@ -26,12 +26,14 @@
     color: var(--eerie-black);
     background-color: var(--honeydew);
     color-scheme: light;
+    --layer-border-color: var(--eerie-black)
   }
 
   &.dark {
     color: var(--honeydew);
     background-color: var(--eerie-black);
     color-scheme: dark;
+    --layer-border-color: var(--honeydew);
   }
 
 }

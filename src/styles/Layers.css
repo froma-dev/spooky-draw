@@ -11,18 +11,20 @@
         position: relative;
         height: 220px;
         width: 220px;
+        border: 2px solid transparent;
         border-radius: 12px;
-        transition: background-color 0.2s ease-in-out;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+        transition: background-color 0.25s ease-in-out;
+        display: grid;
         overflow: hidden;
+
+        > * {
+            grid-column: 1;
+            grid-row: 1;
+        }
 
         img {
             width: 100%;
             height: 100%;
-            position: absolute;
             z-index: -1;
             object-fit: cover;
             border-radius: 10px;
@@ -41,7 +43,7 @@
             width: 100%;
             height: 100%;
             cursor: pointer;
-            transition: opacity 0.3s ease-in-out;
+            transition: all 0.25s ease-in-out;
         }
 
         .__icon {
@@ -60,29 +62,37 @@
             }
         }
         &.--change {
-            border: 2px solid var(--gray);
-
             label {
                 opacity: 0;
             }
         }
         &.--canvas {
-            border: 2px solid var(--gray);
+            border: 2px solid transparent;
+            animation: slide-from-left 0.25s ease-in forwards, appear 0.25s ease-in forwards;
 
             img {
                 object-fit: fill;
             }
             .__background {
-                background-color: var(--gray);
+                border-radius: 10px;
+                padding: 0.25rem;
             }
             .__icon {
                 opacity: 0;
             }
         }
 
+        &.selected {
+            border: 2px solid var(--layer-border-color)
+        }
         &:hover {
-            background-color: var(--eerie-black-low-opacity);
             cursor: pointer;
+            border: 2px solid var(--layer-border-color);
+            color: var(--gray);
+
+            label, > div {
+                background-color: var(--eerie-black-low-opacity);
+            }
 
             &.--change {
                 label {
