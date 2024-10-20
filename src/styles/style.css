@@ -21,6 +21,7 @@
   --green-success: hsl(150deg 64.78% 41.26%);
 
   transition: background-color 0.4s ease-in-out;
+  --smooth-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
 
   &.light {
     color: var(--eerie-black);

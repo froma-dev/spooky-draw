@@ -1,0 +1,27 @@
+.button {
+    display: flex;
+    height: auto;
+    margin: 0;
+    padding: 0.5rem 1rem;
+    background: var(--gray);
+    color: var(--night);
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 400;
+    transition: background-color 0.2s ease-in-out;
+    line-height: 0;
+    align-items: center;
+    gap: 0.5rem;
+
+    .icon {
+        svg {
+            width: 35px;
+            height: 35px;
+        }
+    }
+
+    &:hover {
+        background-color: #f6f6f6;
+    }
+}

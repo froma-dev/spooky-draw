@@ -162,6 +162,20 @@ export default class Layer {
         $canvas.height = canvasHeight
     }
 
+    clearCanvas() {
+        const currentImageData = this.getCurrentImageData()
+        const $canvas = this.$el
+        const ctx = $canvas.getContext('2d')
+
+        if(currentImageData) this.controlZValues.push(currentImageData)
+        ctx?.clearRect(0, 0, $canvas.width, $canvas.height)
+    }
+
+    resetCanvas() {
+        this.clearCanvas()
+        this.controlZValues.length = 0
+    }
+
     get el() {
         return this.$el
     }

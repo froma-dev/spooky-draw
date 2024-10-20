@@ -13,7 +13,7 @@
         width: 220px;
         border: 2px solid transparent;
         border-radius: 12px;
-        transition: background-color 0.25s ease-in-out;
+        transition: background-color 0.25s var(--smooth-timing-function);
         display: grid;
         overflow: hidden;
 
@@ -43,14 +43,14 @@
             width: 100%;
             height: 100%;
             cursor: pointer;
-            transition: all 0.25s ease-in-out;
+            transition: all 0.25s var(--smooth-timing-function);
         }
 
         .__icon {
             display: flex;
             background-color: transparent;
             border: none;
-            transition: opacity 0.25s ease-in-out;
+            transition: opacity 0.25s var(--smooth-timing-function);
         }
 
         &.--add {

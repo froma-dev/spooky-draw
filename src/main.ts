@@ -1,5 +1,6 @@
 import '@styles/style.css'
 import '@styles/animations.css'
+import '@styles/Button.css'
 import Header from './components/Header.ts'
 import {THEME, type Theme} from './components/ThemeSwitch.ts'
 import {storage} from "@services/LocalStorage.ts";
@@ -23,7 +24,6 @@ class Main {
         const workspace = new Workspace()
 
         main.appendChild(workspace.el)
-
         body?.appendChild(header.el)
         body?.appendChild(main)
         body?.appendChild(footer.el)

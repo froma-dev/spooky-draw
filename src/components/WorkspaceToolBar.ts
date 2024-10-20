@@ -1,5 +1,6 @@
 import "@styles/WorkspaceToolbar.css"
-import {CircleCheck, CircleExclamation, LoadingIcon} from "@icons/Icon.ts";
+import {CircleCheck, CircleExclamation, LoadingIcon, PhotoDownload} from "@icons/Icon.ts";
+import {SuccessfulData as IImageData} from "@services/Cloud.ts";
 
 const mappedStatusIcons = {
     'loading': LoadingIcon,
@@ -12,6 +13,11 @@ type Status = 'loading' | 'error' | 'success'
 interface IStatusParams {
     status: string,
     icon: Status
+}
+
+interface IOutputImageParams {
+    src: string,
+    imageData: IImageData
 }
 
 export default class WorkspaceToolBar {
@@ -55,19 +61,52 @@ export default class WorkspaceToolBar {
 
     }
 
-    async appendOutputImage({src}: { src: string, fallback: string }) {
+    async appendOutputImage({src, imageData}: IOutputImageParams) {
         return new Promise<void>((resolve, reject) => {
+            const $status = document.createElement('div')
             const $transformedImg = document.createElement('img')
 
-            $transformedImg.onload = () => resolve()
+            $status.classList.add('status', `--transformed`)
+            $transformedImg.classList.add('transformed')
+
+            $transformedImg.onload = () => {
+                const $imageActions = this.getImageActions(imageData.publicId, src)
+                $status.appendChild($imageActions)
+                $status.scrollIntoView({ behavior: 'smooth' })
+                resolve()
+            }
             $transformedImg.onerror = () => {
-                $transformedImg.src = src
+                $transformedImg.src = imageData.secureUrl
                 reject()
             }
+            $transformedImg.crossOrigin = 'anonymous'
             $transformedImg.src = src
             $transformedImg.alt = "Transformed image"
-            this.$outputs.appendChild($transformedImg)
+
+            $status.appendChild($transformedImg)
+            $status.scrollIntoView({ behavior: 'smooth' })
+            this.$outputs.appendChild($status)
         })
+    }
+
+    getImageActions (publicId: string, src: string): HTMLDivElement {
+        const $replaceImageButton = document.createElement('button')
+        $replaceImageButton.classList.add('button', 'change-to-transformed-image')
+        $replaceImageButton.setAttribute('id', 'change-to-transformed-image')
+        $replaceImageButton.setAttribute('data-publicid', publicId)
+        $replaceImageButton.innerHTML = 'Prompt this image'
+
+        const $imageActions = document.createElement('div')
+        $imageActions.classList.add('options')
+        $imageActions.innerHTML = `
+            <a class="button download-transformation" href=${src} download=${publicId} target="_blank">
+                <span class="icon">${PhotoDownload}</span>
+                <span class="text">Download</span>
+            </a>
+            `
+        $imageActions.append($replaceImageButton)
+
+        return $imageActions
     }
 
     appendOutputStatus({status, icon}: IStatusParams) {
@@ -85,10 +124,11 @@ export default class WorkspaceToolBar {
         `
 
         this.$outputs.appendChild($status)
+        $status.scrollIntoView({ behavior: 'smooth' })
     }
 
     updatePrevOutputStatus({status, icon}: IStatusParams) {
-        const $statusList = this.$outputs.querySelectorAll('.status')
+        const $statusList = this.$outputs.querySelectorAll('.--loading')
         const $lastStatus = $statusList[$statusList.length - 1]
         let iconStatus = icon === 'success' ? mappedStatusIcons.success : mappedStatusIcons.error
         const $icon = $lastStatus.querySelector('.icon')
@@ -109,6 +149,10 @@ export default class WorkspaceToolBar {
 
     clearInputValue() {
         this.$promptInput.value = ''
+    }
+
+    clearWorkspace() {
+        this.$outputs.innerHTML = ''
     }
 
     get el() {

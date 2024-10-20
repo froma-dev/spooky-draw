@@ -4,8 +4,10 @@ import Layer from "@components/Layer.ts";
 import {isValidImgFileType, getCanvasBlob} from "@utils/utils.ts";
 import ImageLayer from "@components/ImageLayer.ts";
 import WorkspaceToolBar from "@components/WorkspaceToolBar.ts";
-import {cloud, SuccessfulData as ImageData} from "@services/Cloud.ts";
+import {cloud, SuccessfulData} from "@services/Cloud.ts";
 import {storage} from "@services/LocalStorage.ts";
+
+type ImageData = SuccessfulData & {transformations?: string[]}
 
 export class Workspace {
     $el: HTMLElement
@@ -28,28 +30,49 @@ export class Workspace {
         this.canvasLayers = []
 
         this.$el.addEventListener("change", (ev: Event) => this.onFileInputChange(ev));
-        document.addEventListener("drawchange", ((ev: CustomEvent) => this.updateCanvasDisplay(ev)) as EventListener);
+        document.addEventListener("drawchange", ((ev: CustomEvent<HTMLCanvasElement>) => {
+            this.updateCanvasDisplay(ev.detail)
+        }) as EventListener);
 
         const workspaceToolbar = this.workspaceToolbar = new WorkspaceToolBar()
         const $workspaceToolbar = workspaceToolbar.el
-        $workspaceToolbar.addEventListener("click", (ev: Event) => this.submitPrompt(ev))
+        $workspaceToolbar.addEventListener("click", (ev: Event) => this.onWorkspaceToolbarClick(ev))
 
         this.$el.appendChild(this.layers.el)
         this.$el.appendChild(this.$canvasContainer)
         this.$el.appendChild($workspaceToolbar)
     }
 
-    onFileInputChange(ev: Event) {
-        const target = ev.target as HTMLInputElement
+    onWorkspaceToolbarClick(ev: Event) {
+        const $target = ev.target as HTMLElement
 
-        if (this.canvasLayers.length === 0) {
-            this.setImageDisplay(target)
-        } else {
-            this.updateImageDisplay(target)
+        if ($target?.id === 'submit-prompt') this.submitPrompt()
+        else if ($target?.id === 'change-to-transformed-image') {
+            const publicId = $target.dataset.publicid
+
+            if (publicId) {
+                const $lastCanvas = this.canvasLayers[this.canvasLayers.length - 1]
+                this.replaceImageDisplay(publicId)
+                $lastCanvas.clearCanvas()
+                this.updateCanvasDisplay($lastCanvas.el)
+                this.workspaceToolbar.clearWorkspace()
+            }
         }
     }
 
-    retrieveSrc($input: HTMLInputElement) {
+    onFileInputChange(ev: Event) {
+        const target = ev.target as HTMLInputElement
+        const src = this.retrieveSrcFromInput(target)
+
+        if (this.canvasLayers.length === 0) {
+            if (src) this.setImageLayer(src)
+            this.setCanvasLayer({selected: true})
+        } else {
+            this.updateImageDisplay(src)
+        }
+    }
+
+    retrieveSrcFromInput($input: HTMLInputElement) {
         let [file] = $input?.files ?? []
 
         const src = URL.createObjectURL(file)
@@ -62,12 +85,21 @@ export class Workspace {
         return src
     }
 
-    setImageDisplay(target: HTMLInputElement) {
-        const src = this.retrieveSrc(target)
-        if (!src) return
+    replaceImageDisplay(publicId: string) {
+        const imageData = storage.getItem<ImageData>(publicId)
 
-        this.setImageLayer(src)
-        this.setCanvasLayer({selected: true})
+        if (!imageData) return
+        const transformationLength = imageData.transformations?.length ?? 0
+        const lastTransformationSrc = imageData.transformations
+            ? imageData.transformations[transformationLength - 1]
+            : ''
+
+        console.log('lastTransformationSrc ', lastTransformationSrc)
+        debugger
+        if (lastTransformationSrc) {
+            this.updateImageDisplay(lastTransformationSrc)
+
+        }
     }
 
     setImageLayer(src: string) {
@@ -99,17 +131,15 @@ export class Workspace {
         // this.layers.setEmptyCanvasLayer()
     }
 
-    updateImageDisplay(target: HTMLInputElement) {
-        const {imageEl} = this.canvasLayers[0] as ImageLayer
-        const src = this.retrieveSrc(target)
-
-        if (!src) return
-        imageEl.src = src
+    updateImageDisplay(src: string) {
+        if (src) {
+            const {imageEl} = this.canvasLayers[0] as ImageLayer
+            imageEl.src = src
+        }
     }
 
-    updateCanvasDisplay(ev: CustomEvent) {
-        console.log('will update canvas display', ev.detail)
-        this.layers.updateCanvasDisplay(ev.detail)
+    updateCanvasDisplay($canvas: HTMLCanvasElement) {
+        this.layers.updateCanvasDisplay($canvas)
     }
 
     mergeCanvasLayers() {
@@ -137,23 +167,19 @@ export class Workspace {
         URL.revokeObjectURL(blobUrl)
     }
 
-    async submitPrompt(ev: Event) {
-        const $target = ev.target as HTMLElement
+    async submitPrompt() {
+        const inputValue = this.workspaceToolbar.retrieveInputValue()
+        this.workspaceToolbar.clearInputValue()
 
-        if ($target?.id === 'submit-prompt') {
-            const inputValue = this.workspaceToolbar.retrieveInputValue()
-            this.workspaceToolbar.clearInputValue()
+        const uploadResult = await this.uploadFile()
 
-            const uploadResult = await this.uploadFile()
-
-            if (uploadResult?.success) {
-                const data = uploadResult.data as ImageData
-                this.workspaceToolbar.updatePrevOutputStatus({status: 'Image uploaded successfully!', icon: 'success'})
-                this.saveUploadedReference(data)
-                this.transformImage(data, inputValue)
-            } else {
-                this.workspaceToolbar.updatePrevOutputStatus({status: 'Image upload failed', icon: 'error'})
-            }
+        if (uploadResult?.success) {
+            const data = uploadResult.data as ImageData
+            this.workspaceToolbar.updatePrevOutputStatus({status: 'Image uploaded successfully!', icon: 'success'})
+            this.saveUploadedReference(data)
+            this.transformImage(data, inputValue)
+        } else {
+            this.workspaceToolbar.updatePrevOutputStatus({status: 'Image upload failed', icon: 'error'})
         }
     }
 
@@ -169,14 +195,17 @@ export class Workspace {
 
     async transformImage(imageData: ImageData, prompt: string) {
         const src = cloud.transformImage({imageData, prompt})
-        const {secureUrl} = imageData
-        this.workspaceToolbar.appendOutputStatus({status: `Transforming image into: <span class="prompt">${prompt}</span>`, icon: 'loading'})
-        this.workspaceToolbar.appendOutputImage({src, fallback: secureUrl})
+        this.workspaceToolbar.appendOutputStatus({
+            status: `Transforming image into: <span class="prompt">${prompt}</span>`,
+            icon: 'loading'
+        })
+        this.workspaceToolbar.appendOutputImage({src, imageData})
             .then(() => {
                 this.workspaceToolbar.updatePrevOutputStatus({
                     status: `Image transformed into <span class="prompt">${prompt}</span>`,
                     icon: 'success'
                 })
+                this.saveTransformedReference(src, imageData)
             })
             .catch(() => {
                 this.workspaceToolbar.updatePrevOutputStatus({
@@ -187,9 +216,24 @@ export class Workspace {
     }
 
     saveUploadedReference(uploadResultData: ImageData) {
-        const {assetId} = uploadResultData
+        const {publicId} = uploadResultData
 
-        storage.setItem<ImageData>(assetId, uploadResultData)
+        storage.setItem<ImageData>(publicId, uploadResultData)
+    }
+
+    saveTransformedReference(src: string, imageData: ImageData) {
+        const {publicId} = imageData
+        let {transformations} = imageData
+        let imageDataTransformations = imageData
+
+        if (transformations) {
+            transformations.push(src)
+        } else {
+            transformations = [src]
+            imageDataTransformations = {...imageData, transformations}
+        }
+
+        storage.setItem<ImageData>(publicId, imageDataTransformations)
     }
 
     get el() {

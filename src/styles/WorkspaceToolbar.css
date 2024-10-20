@@ -38,28 +38,6 @@
                     outline: none;
                 }
             }
-
-            .button {
-                height: auto;
-                margin: 0;
-                padding: 0.5rem 1rem;
-                background: var(--gray);
-                color: var(--night);
-                border: none;
-                border-radius: 0.5rem;
-                font-size: 1.25rem;
-                font-weight: 400;
-                transition: background-color 0.2s ease-in-out;
-                line-height: 0;
-
-                &:hover {
-                    background-color: #f6f6f6;
-                }
-
-                span {
-                    padding: 1rem 2rem;
-                }
-            }
         }
     }
 
@@ -104,6 +82,40 @@
             &.--error {
                 .icon {
                     color: var(--engineering-orange);
+                }
+            }
+
+            &.--transformed {
+                display: grid;
+                justify-items: center;
+                align-items: end;
+                overflow: hidden;
+                width: 100%;
+
+                img {
+                    grid-column: 1;
+                    grid-row: 1;
+                    width: 100%;
+                }
+
+                .options {
+                    grid-column: 1;
+                    grid-row: 1;
+                    display: flex;
+                    gap: 0.5rem;
+                    transform: translateY(120%);
+                    transition: transform 0.3s var(--smooth-timing-function);
+
+                    svg {
+                        width: 35px;
+                        height: 35px;
+                    }
+                }
+
+                &:hover {
+                    .options {
+                        transform: translateY(0);
+                    }
                 }
             }
 
