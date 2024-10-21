@@ -51,6 +51,7 @@ export default class WorkspaceToolBar {
             <button id="submit-prompt" class="button">Submit</button>
         `
         this.$promptInput = this.$promptBar.querySelector('.input')!
+        this.$promptInput.addEventListener('change', (ev: Event) => {ev.stopPropagation()})
         $inputs.appendChild(this.$coords)
         $inputs.appendChild(this.$promptBar)
         this.$el.appendChild($inputs)
@@ -68,7 +69,7 @@ export default class WorkspaceToolBar {
 
             $status.classList.add('status', `--transformed`)
             $transformedImg.classList.add('transformed')
-
+            $transformedImg.crossOrigin = 'anonymous'
             $transformedImg.onload = () => {
                 const $imageActions = this.getImageActions(imageData.publicId, src)
                 $status.appendChild($imageActions)

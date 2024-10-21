@@ -75,7 +75,13 @@ export class Workspace {
     retrieveSrcFromInput($input: HTMLInputElement) {
         let [file] = $input?.files ?? []
 
-        const src = URL.createObjectURL(file)
+        let src
+
+        try {
+            src = URL.createObjectURL(file)
+        } catch (err) {
+            src = URL.createObjectURL(file)
+        }
 
         if (!isValidImgFileType(file?.type)) {
             console.error(`File ${file?.type} is invalid.`)

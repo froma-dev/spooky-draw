@@ -19,6 +19,7 @@ export default class ImageLayer extends Layer {
 
         if ($image && src) {
             $image.addEventListener('load', () => this.drawImage())
+            $image.crossOrigin = 'anonymous'
             $image.src = src
         }
     }

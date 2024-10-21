@@ -74,7 +74,7 @@ export default class Layers {
         const layer = document.createElement('div')
         layer.classList.add('layer', '--canvas', selected ? 'selected' : '')
         layer.innerHTML = `
-                <img class="__background" src="/skull.svg" alt="canvas background"/>
+                <img class="__background" src="/skull.svg" alt="canvas background" crossorigin/>
                 <div>
                     <span class="__icon">${TrashFilled}${Eye}</span>
                 </div>
@@ -88,6 +88,7 @@ export default class Layers {
 
         if (!backgroundImage) return
 
+        backgroundImage.crossOrigin = 'anonymous'
         backgroundImage.src = canvas.toDataURL("image/png", 1.0)
     }
 
