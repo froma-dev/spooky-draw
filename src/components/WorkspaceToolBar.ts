@@ -47,8 +47,22 @@ export default class WorkspaceToolBar {
         `
 
         this.$promptBar.innerHTML = `
-            <input type="text" placeholder="Type your prompt" class="input" />
-            <button id="submit-prompt" class="button">Submit</button>
+            <section class="prompters">
+                <h3>Replace Background</h3>
+                <input type="text" placeholder="Type your prompt" class="input" />
+                <button id="submit-prompt" class="button">Submit</button>
+            </section>
+            
+            <section class="prompters">
+                <h3>Replace Items</h3>
+                <label for="replace-this">
+                    <input id="replace-this" type="text" placeholder="What to replace?" class="input" />
+                </label>
+                <label for="with-this">
+                    <input id="with-this" type="text" placeholder="What to replace with?" class="input" />
+                </label>
+                <button id="submit-replace-item" class="button">Submit</button>
+            </section>
         `
         this.$promptInput = this.$promptBar.querySelector('.input')!
         this.$promptInput.addEventListener('change', (ev: Event) => {ev.stopPropagation()})
@@ -142,10 +156,21 @@ export default class WorkspaceToolBar {
             $icon.innerHTML = iconStatus
         if ($text)
             $text.innerHTML = status
+
+        if (icon === 'error') {
+
+        }
     }
 
     retrieveInputValue() {
         return this.$promptInput.value
+    }
+
+    retrieveInputValues() {
+        const $from = this.$promptBar.querySelector('#replace-this') as HTMLInputElement
+        const $to = this.$promptBar.querySelector('#with-this') as HTMLInputElement
+
+        return [$from.value, $to.value]
     }
 
     clearInputValue() {

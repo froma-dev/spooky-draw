@@ -46,7 +46,14 @@ export class Workspace {
     onWorkspaceToolbarClick(ev: Event) {
         const $target = ev.target as HTMLElement
 
-        if ($target?.id === 'submit-prompt') this.submitPrompt()
+        if ($target?.id === 'submit-prompt') {
+            const inputValue = this.workspaceToolbar.retrieveInputValue()
+            this.submitPrompt(inputValue)
+        }
+        else if ($target?.id === 'submit-replace-item') {
+            const inputValues = this.workspaceToolbar.retrieveInputValues()
+            this.submitPrompt(inputValues)
+        }
         else if ($target?.id === 'change-to-transformed-image') {
             const publicId = $target.dataset.publicid
 
@@ -173,8 +180,7 @@ export class Workspace {
         URL.revokeObjectURL(blobUrl)
     }
 
-    async submitPrompt() {
-        const inputValue = this.workspaceToolbar.retrieveInputValue()
+    async submitPrompt(inputValue: string | string[]) {
         this.workspaceToolbar.clearInputValue()
 
         const uploadResult = await this.uploadFile()
@@ -199,7 +205,7 @@ export class Workspace {
         return await cloud.uploadFile(blob)
     }
 
-    async transformImage(imageData: ImageData, prompt: string) {
+    async transformImage(imageData: ImageData, prompt: string | string[]) {
         const src = cloud.transformImage({imageData, prompt})
         this.workspaceToolbar.appendOutputStatus({
             status: `Transforming image into: <span class="prompt">${prompt}</span>`,

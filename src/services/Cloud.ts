@@ -1,5 +1,5 @@
-import {Cloudinary as Cld} from "@cloudinary/url-gen"
-import {generativeBackgroundReplace} from "@cloudinary/url-gen/actions/effect"
+import {Cloudinary as Cld, type CloudinaryImage} from "@cloudinary/url-gen"
+import {generativeBackgroundReplace, generativeReplace} from "@cloudinary/url-gen/actions/effect"
 
 const CLOUD_BASE_URL = import.meta.env.VITE_CLOUD_BASE_URL
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
@@ -32,7 +32,7 @@ interface IUploadSuccessful {
 
 interface ITransformImageParams {
     imageData: SuccessfulData,
-    prompt: string
+    prompt: string | string[]
 }
 
 class Cloud {
@@ -90,14 +90,23 @@ class Cloud {
 
     transformImage({imageData, prompt}: ITransformImageParams) {
         const myImage = this.cloudinary.image(imageData.publicId)
-        const generativePrompt = `${prompt} make it spooky halloween themed`
 
-        myImage.effect(generativeBackgroundReplace().prompt(generativePrompt))
-
-        console.log('myImage',myImage)
-        console.log('myImage',myImage.toURL())
+        if (typeof prompt === 'string') {
+            this.replaceImageBackground(prompt, myImage)
+        } else if(Array.isArray(prompt)) {
+            const [from, to] = prompt
+            this.replaceItems(from, `${to}`, myImage)
+        }
 
         return myImage.toURL()
+    }
+
+    replaceItems (from: string, to: string, myImage: CloudinaryImage) {
+        myImage.effect(generativeReplace().from(from).to(to))
+    }
+
+    replaceImageBackground(prompt: string, myImage: CloudinaryImage) {
+        myImage.effect(generativeBackgroundReplace().prompt(`${prompt} and make it spooky halloween themed`))
     }
 }
 
