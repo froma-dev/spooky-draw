@@ -20,9 +20,6 @@ export class Workspace {
     constructor() {
         this.$el = document.createElement('section')
         this.$el.classList.add('workspace')
-        this.$el.innerHTML = `
-            <h2>Workspace</h2>
-        `
 
         this.$canvasContainer = document.createElement('div')
         this.$canvasContainer.classList.add('canvas-container')
@@ -37,6 +34,10 @@ export class Workspace {
         const workspaceToolbar = this.workspaceToolbar = new WorkspaceToolBar()
         const $workspaceToolbar = workspaceToolbar.el
         $workspaceToolbar.addEventListener("click", (ev: Event) => this.onWorkspaceToolbarClick(ev))
+        document.addEventListener('trigger-camera', () => {
+
+            console.log('trigger camera')
+        })
 
         this.$el.appendChild(this.layers.el)
         this.$el.appendChild(this.$canvasContainer)
@@ -116,6 +117,33 @@ export class Workspace {
     }
 
     setImageLayer(src: string) {
+        const img = new Image()
+        const image = {
+            src,
+            $el: img
+        }
+        const imageLayer = new ImageLayer({
+            type: 'image',
+            image
+        })
+
+        this.layers.setImageDisplay({image})
+        this.$canvasContainer.appendChild(imageLayer.el)
+        this.canvasLayers.push(imageLayer)
+    }
+
+    setVideoLayer() {
+        const video = document.createElement('video')
+
+        //this.layers.setImageDisplay({image})
+        this.$canvasContainer.appendChild(video)
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => video.srcObject = stream)
+            .catch((err: Error) => {console.error('Error accessing user media')})
+        //this.canvasLayers.push(imageLayer)
+    }
+
+    takePhoto () {
         const img = new Image()
         const image = {
             src,

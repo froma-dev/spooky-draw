@@ -1,5 +1,5 @@
 import "@styles/Layers.css"
-import {Eye, PlusIcon, TrashFilled} from "@icons/Icon.ts";
+import {Eye, PlusIcon, TrashFilled, CameraIcon} from "@icons/Icon.ts";
 
 export interface ImageDisplayParams {
     image: {
@@ -11,20 +11,14 @@ export interface ImageDisplayParams {
 export default class Layers {
     $el: HTMLElement
     $imageLayer: HTMLElement
-    $fileInput: HTMLInputElement
     $transformations: HTMLElement
     $original: HTMLElement
+    $cameraButton: HTMLElement
 
     constructor() {
         this.$el = document.createElement('div')
         this.$el.classList.add('layers')
 
-        this.$fileInput = document.createElement('input')
-        this.$fileInput.setAttribute('type', 'file')
-        this.$fileInput.setAttribute('id', 'image_upload')
-        this.$fileInput.setAttribute('name', 'image_upload')
-        this.$fileInput.setAttribute('accept', '.jpg, .jpeg, .png, .webp, .svg')
-        this.$fileInput.classList.add('input-file')
         this.$transformations = document.createElement('section')
         this.$original = document.createElement('section')
         this.$transformations.classList.add('transformations')
@@ -32,11 +26,24 @@ export default class Layers {
 
         this.$original.innerHTML = `
             <h3>Original</h3>
-                <div class="layer --add --image">
-                    <label for="image_upload">
-                        <span class="__icon">${PlusIcon}</span>
-                        <span class="text">Choose image</span>
-                    </label>
+            <div class="layer --add --image">
+                    <span class="__icons">
+                        <button class="icon" id="img-upload">
+                            <label for="image_upload">
+                            ${PlusIcon}
+                            <input 
+                            type="file" 
+                            id="image_upload" 
+                            name="image_upload" 
+                            accept=".jpg, .jpeg, .png, .webp, .svg" 
+                            class="input-file"
+                            />
+                            </label>
+                        </button>
+                        <button class="icon" id="camera">
+                            ${CameraIcon}
+                        </button>
+                    </span>
             </div>
         `
         this.$transformations.innerHTML = `<h3>Transformations</h3>`
@@ -44,7 +51,12 @@ export default class Layers {
         this.$el.appendChild(this.$transformations)
 
         this.$imageLayer = this.$el.querySelector('.layer')!
-        this.$imageLayer?.appendChild(this.$fileInput)
+        this.$cameraButton = this.$el.querySelector('#camera')!
+
+        this.$cameraButton.addEventListener('click', (ev: MouseEvent) => {
+            ev.stopPropagation()
+            document.dispatchEvent(new CustomEvent('trigger-camera'))
+        })
     }
 
     setImageDisplay ({image}: ImageDisplayParams) {
@@ -73,7 +85,8 @@ export default class Layers {
         layer.innerHTML = `
                 <div class="layer --add">
                     <div>
-                        <span class="__icon">${PlusIcon}</span>
+                        <span class="__icons">
+                        <span class="icon">${PlusIcon}</span>
                         <span class="text">Add canvas</span>
                     </div>
                 </div>
@@ -88,7 +101,10 @@ export default class Layers {
         layer.innerHTML = `
                 <img class="__background" src="/skull.svg" alt="canvas background" crossorigin/>
                 <div>
-                    <span class="__icon">${TrashFilled}${Eye}</span>
+                    <span class="__icons">
+                        <span class="icon">${TrashFilled}</span>
+                        <span class="icon">${Eye}</span>
+                    </span>
                 </div>
         `
 

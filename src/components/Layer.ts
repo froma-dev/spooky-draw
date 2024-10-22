@@ -45,8 +45,6 @@ export default class Layer {
             canvas.addEventListener('mousedown', (ev: MouseEvent) => this.startDrawingCursor(ev))
             canvas.addEventListener('mouseup', () => this.stopDrawing())
             canvas.addEventListener('mouseleave', () => this.stopDrawing())
-            //canvas.addEventListener('mousemove', (ev: MouseEvent) => this.updateCoords(ev))
-            //canvas.addEventListener('mouseleave', () => this.clearCoords())
         }
     }
 
@@ -170,6 +168,8 @@ export default class Layer {
         if(currentImageData) this.controlZValues.push(currentImageData)
         ctx?.clearRect(0, 0, $canvas.width, $canvas.height)
     }
+
+
 
     resetCanvas() {
         this.clearCanvas()
