@@ -9,8 +9,8 @@
 
     .layer {
         position: relative;
-        height: 220px;
-        width: 220px;
+        height: 150px;
+        width: 150px;
         border: 2px solid transparent;
         border-radius: 12px;
         transition: background-color 0.25s var(--smooth-timing-function);

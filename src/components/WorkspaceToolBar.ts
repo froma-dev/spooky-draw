@@ -22,7 +22,6 @@ interface IOutputImageParams {
 
 export default class WorkspaceToolBar {
     $el: HTMLElement;
-    $coords: HTMLElement;
     $promptBar: HTMLDivElement
     $outputs: HTMLDivElement
     $promptInput: HTMLInputElement
@@ -30,21 +29,13 @@ export default class WorkspaceToolBar {
     constructor() {
         this.$el = document.createElement('div')
         this.$promptBar = document.createElement('div')
-        this.$coords = document.createElement('span')
 
         this.$promptBar.classList.add('prompt-bar')
         this.$el.classList.add('workspace-toolbar')
-        this.$coords.setAttribute('id', 'coords')
         const $inputs = document.createElement('div')
         $inputs.classList.add('inputs')
         this.$outputs = document.createElement('div')
         this.$outputs.classList.add('outputs')
-
-        $inputs.innerHTML = `
-            <label for="color-picker">
-                <input type="color" id="color-picker" class="__color-picker" value="#666EFF">
-            </label>
-        `
 
         this.$promptBar.innerHTML = `
             <section class="prompters">
@@ -66,7 +57,6 @@ export default class WorkspaceToolBar {
         `
         this.$promptInput = this.$promptBar.querySelector('.input')!
         this.$promptInput.addEventListener('change', (ev: Event) => {ev.stopPropagation()})
-        $inputs.appendChild(this.$coords)
         $inputs.appendChild(this.$promptBar)
         this.$el.appendChild($inputs)
         this.$el.appendChild(this.$outputs)

@@ -68,7 +68,6 @@ body {
   place-items: center;
   align-content: space-between;
   min-width: 320px;
-  max-width: 1440px;
   min-height: 100vh;
 }
 

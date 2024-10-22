@@ -12,6 +12,8 @@ export default class Layers {
     $el: HTMLElement
     $imageLayer: HTMLElement
     $fileInput: HTMLInputElement
+    $transformations: HTMLElement
+    $original: HTMLElement
 
     constructor() {
         this.$el = document.createElement('div')
@@ -23,15 +25,23 @@ export default class Layers {
         this.$fileInput.setAttribute('name', 'image_upload')
         this.$fileInput.setAttribute('accept', '.jpg, .jpeg, .png, .webp, .svg')
         this.$fileInput.classList.add('input-file')
+        this.$transformations = document.createElement('section')
+        this.$original = document.createElement('section')
+        this.$transformations.classList.add('transformations')
+        this.$original.classList.add('original')
 
-        this.$el.innerHTML = `
-            <div class="layer --add --image">
+        this.$original.innerHTML = `
+            <h3>Original</h3>
+                <div class="layer --add --image">
                     <label for="image_upload">
                         <span class="__icon">${PlusIcon}</span>
                         <span class="text">Choose image</span>
                     </label>
             </div>
         `
+        this.$transformations.innerHTML = `<h3>Transformations</h3>`
+        this.$el.appendChild(this.$original)
+        this.$el.appendChild(this.$transformations)
 
         this.$imageLayer = this.$el.querySelector('.layer')!
         this.$imageLayer?.appendChild(this.$fileInput)
@@ -61,13 +71,15 @@ export default class Layers {
         const layer = document.createElement('div')
         layer.classList.add('layer', '--add')
         layer.innerHTML = `
-                <div>
-                    <span class="__icon">${PlusIcon}</span>
-                    <span class="text">Add canvas</span>
+                <div class="layer --add">
+                    <div>
+                        <span class="__icon">${PlusIcon}</span>
+                        <span class="text">Add canvas</span>
+                    </div>
                 </div>
         `
 
-        this.$el.appendChild(layer)
+        this.$transformations.appendChild(layer)
     }
 
     setCanvasDisplay ({selected = false}: { selected: boolean }) {
@@ -80,7 +92,7 @@ export default class Layers {
                 </div>
         `
 
-        this.$el.appendChild(layer)
+        this.$transformations.appendChild(layer)
     }
 
     updateCanvasDisplay (canvas: HTMLCanvasElement) {

@@ -19,7 +19,7 @@ export class Workspace {
 
     constructor() {
         this.$el = document.createElement('section')
-        this.$el.classList.add('workspace', 'stacked')
+        this.$el.classList.add('workspace')
         this.$el.innerHTML = `
             <h2>Workspace</h2>
         `
