@@ -66,6 +66,8 @@ export default class Layers {
         $image.addEventListener('load', () => this.onImageDisplayLoad())
         $image.src = src
 
+        console.log('setImageDisplay = ', imageLayer, $image)
+
         imageLayer?.appendChild($image)
     }
 

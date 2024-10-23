@@ -6,6 +6,7 @@ import ImageLayer from "@components/ImageLayer.ts";
 import WorkspaceToolBar from "@components/WorkspaceToolBar.ts";
 import {cloud, SuccessfulData} from "@services/Cloud.ts";
 import {storage} from "@services/LocalStorage.ts";
+import VideoLayer from "@components/VideoLayer.ts";
 
 type ImageData = SuccessfulData & {transformations?: string[]}
 
@@ -16,6 +17,7 @@ export class Workspace {
     canvasLayers: Layer[]
     mergedCanvas: Layer | null = null
     workspaceToolbar: WorkspaceToolBar
+    videoLayer: VideoLayer | null = null
 
     constructor() {
         this.$el = document.createElement('section')
@@ -26,7 +28,12 @@ export class Workspace {
         this.layers = new Layers()
         this.canvasLayers = []
 
-        this.$el.addEventListener("change", (ev: Event) => this.onFileInputChange(ev));
+        this.$el.addEventListener("change", (ev: Event) => {
+            const target = ev.target as HTMLInputElement
+            const src = this.retrieveSrcFromInput(target)
+
+            this.setImages(src)
+        });
         document.addEventListener("drawchange", ((ev: CustomEvent<HTMLCanvasElement>) => {
             this.updateCanvasDisplay(ev.detail)
         }) as EventListener);
@@ -35,8 +42,11 @@ export class Workspace {
         const $workspaceToolbar = workspaceToolbar.el
         $workspaceToolbar.addEventListener("click", (ev: Event) => this.onWorkspaceToolbarClick(ev))
         document.addEventListener('trigger-camera', () => {
-
-            console.log('trigger camera')
+            if (this.videoLayer?.isPlaying) {
+                this.takePhoto()
+            } else {
+                this.setVideoLayer()
+            }
         })
 
         this.$el.appendChild(this.layers.el)
@@ -68,10 +78,7 @@ export class Workspace {
         }
     }
 
-    onFileInputChange(ev: Event) {
-        const target = ev.target as HTMLInputElement
-        const src = this.retrieveSrcFromInput(target)
-
+    setImages(src: string) {
         if (this.canvasLayers.length === 0) {
             if (src) this.setImageLayer(src)
             this.setCanvasLayer({selected: true})
@@ -128,35 +135,32 @@ export class Workspace {
         })
 
         this.layers.setImageDisplay({image})
-        this.$canvasContainer.appendChild(imageLayer.el)
+        this.$canvasContainer.appendChild(img)
         this.canvasLayers.push(imageLayer)
     }
 
     setVideoLayer() {
-        const video = document.createElement('video')
-
         //this.layers.setImageDisplay({image})
-        this.$canvasContainer.appendChild(video)
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then((stream) => video.srcObject = stream)
-            .catch((err: Error) => {console.error('Error accessing user media')})
-        //this.canvasLayers.push(imageLayer)
+        if (!this.videoLayer) {
+            this.videoLayer = new VideoLayer({type: 'capture'})
+        }
+
+        this.$canvasContainer.appendChild(this.videoLayer.videoEl)
+        this.videoLayer.startImageCapture()
     }
 
     takePhoto () {
-        const img = new Image()
-        const image = {
-            src,
-            $el: img
+        if (this.videoLayer) {
+            this.videoLayer.takePhoto()
+                .then((blob: Blob) => {
+                    this.setImages(URL.createObjectURL(blob))
+                    if (this.videoLayer) {
+                        this.$canvasContainer.removeChild(this.videoLayer.videoEl)
+                        this.videoLayer.stopImageCapture()
+                    }
+                })
+                .catch((err) => {console.log('Picture failed :(', err)})
         }
-        const imageLayer = new ImageLayer({
-            type: 'image',
-            image
-        })
-
-        this.layers.setImageDisplay({image})
-        this.$canvasContainer.appendChild(imageLayer.el)
-        this.canvasLayers.push(imageLayer)
     }
 
     setCanvasLayer({selected}: { selected: boolean }) {

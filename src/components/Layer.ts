@@ -169,7 +169,37 @@ export default class Layer {
         ctx?.clearRect(0, 0, $canvas.width, $canvas.height)
     }
 
+    drawImage() {
+        const $canvas = this.$el
+        const $source = this.getSource()
+        const canvasWidth = $canvas.parentElement?.clientWidth ?? 1
+        const canvasHeight = $canvas.parentElement?.clientHeight ?? 1
+        const imageAspectRatio = this.getAspectRatio()
+        const canvasAspectRatio = canvasWidth / canvasHeight
+        let drawWidth, drawHeight, offsetX, offsetY
 
+        this.setCanvasSize(canvasWidth, canvasHeight)
+
+        if (imageAspectRatio > canvasAspectRatio) {
+            drawHeight = canvasHeight
+            drawWidth = drawHeight * imageAspectRatio
+            offsetX = -(drawWidth - canvasWidth) / 2
+            offsetY = 0
+        } else {
+            drawWidth = canvasWidth
+            drawHeight = drawWidth / imageAspectRatio
+            offsetX = 0
+            offsetY = -(drawHeight - canvasHeight) / 2
+        }
+
+        const canvas = this.$el
+        const ctx = canvas.getContext('2d')
+        ctx?.drawImage($source, offsetX, offsetY, drawWidth, drawHeight)
+    }
+
+    getAspectRatio() {return 1}
+
+    getSource() {return this.$el}
 
     resetCanvas() {
         this.clearCanvas()
