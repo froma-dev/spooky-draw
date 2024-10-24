@@ -12,7 +12,8 @@ export default class ImageLayer extends Layer {
     $image: HTMLImageElement
 
     constructor(params: ImageLayerParams) {
-        super({type: params.type} as LayerParams)
+        const {type} = params
+        super({type} as LayerParams)
 
         const {src, $el: $image} = params.image
         this.$image = $image

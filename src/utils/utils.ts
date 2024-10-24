@@ -21,3 +21,20 @@ export const getCanvasBlob = async ($canvas: HTMLCanvasElement) => {
 
     return Promise.resolve(blobPromise)
 }
+
+export const retrieveSrcFromFile = (file: File) => {
+    let src
+
+    try {
+        src = URL.createObjectURL(file)
+    } catch (err) {
+        src = URL.createObjectURL(file)
+    }
+
+    if (!isValidImgFileType(file?.type)) {
+        console.error(`File ${file?.type} is invalid.`)
+        return ''
+    }
+
+    return src
+}

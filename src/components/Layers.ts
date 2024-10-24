@@ -53,13 +53,26 @@ export default class Layers {
         this.$imageLayer = this.$el.querySelector('.layer')!
         this.$cameraButton = this.$el.querySelector('#camera')!
 
+
+        document.body.addEventListener('dragover', (ev: DragEvent) => {
+            ev.preventDefault()
+        })
+        this.$imageLayer.addEventListener('drop', (ev: DragEvent) => {
+            ev.preventDefault()
+            const files = ev.dataTransfer?.files
+
+            if (files && files.length) {
+                document.dispatchEvent(new CustomEvent('file-drop', {detail: files[0]}))
+            }
+        })
+
         this.$cameraButton.addEventListener('click', (ev: MouseEvent) => {
             ev.stopPropagation()
             document.dispatchEvent(new CustomEvent('trigger-camera'))
         })
     }
 
-    setImageDisplay ({image}: ImageDisplayParams) {
+    setImageDisplay({image}: ImageDisplayParams) {
         const imageLayer = this.$el.querySelector('.--image')
         const {src, $el: $image} = image
 
@@ -71,7 +84,7 @@ export default class Layers {
         imageLayer?.appendChild($image)
     }
 
-    onImageDisplayLoad () {
+    onImageDisplayLoad() {
         this.$imageLayer.classList.remove('--add')
         this.$imageLayer.classList.add('--change')
         const $text = this.$imageLayer.querySelector('.text')
@@ -81,7 +94,7 @@ export default class Layers {
         }
     }
 
-    setEmptyCanvasLayer () {
+    setEmptyCanvasLayer() {
         const layer = document.createElement('div')
         layer.classList.add('layer', '--add')
         layer.innerHTML = `
@@ -97,7 +110,7 @@ export default class Layers {
         this.$transformations.appendChild(layer)
     }
 
-    setCanvasDisplay ({selected = false}: { selected: boolean }) {
+    setCanvasDisplay({selected = false}: { selected: boolean }) {
         const layer = document.createElement('div')
         layer.classList.add('layer', '--canvas', selected ? 'selected' : '')
         layer.innerHTML = `
@@ -113,7 +126,7 @@ export default class Layers {
         this.$transformations.appendChild(layer)
     }
 
-    updateCanvasDisplay (canvas: HTMLCanvasElement) {
+    updateCanvasDisplay(canvas: HTMLCanvasElement) {
         const backgroundImage: HTMLImageElement | null = this.$el.querySelector('.__background')
 
         if (!backgroundImage) return

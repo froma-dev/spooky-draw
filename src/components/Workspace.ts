@@ -1,7 +1,7 @@
 import '@styles/Workspace.css'
 import Layers from "@components/Layers.ts";
 import Layer from "@components/Layer.ts";
-import {isValidImgFileType, getCanvasBlob} from "@utils/utils.ts";
+import {retrieveSrcFromFile, getCanvasBlob} from "@utils/utils.ts";
 import ImageLayer from "@components/ImageLayer.ts";
 import WorkspaceToolBar from "@components/WorkspaceToolBar.ts";
 import {cloud, SuccessfulData} from "@services/Cloud.ts";
@@ -30,10 +30,21 @@ export class Workspace {
 
         this.$el.addEventListener("change", (ev: Event) => {
             const target = ev.target as HTMLInputElement
-            const src = this.retrieveSrcFromInput(target)
+            let [file] = target?.files ?? []
+
+            if (!file) return
+            const src = retrieveSrcFromFile(file)
 
             this.setImages(src)
         });
+        document.addEventListener("file-drop", ((ev: CustomEvent<File>) => {
+            let file = ev.detail
+
+            if (!file) return
+            const src = retrieveSrcFromFile(file)
+
+            this.setImages(src)
+        }) as EventListener)
         document.addEventListener("drawchange", ((ev: CustomEvent<HTMLCanvasElement>) => {
             this.updateCanvasDisplay(ev.detail)
         }) as EventListener);
@@ -87,25 +98,6 @@ export class Workspace {
         }
     }
 
-    retrieveSrcFromInput($input: HTMLInputElement) {
-        let [file] = $input?.files ?? []
-
-        let src
-
-        try {
-            src = URL.createObjectURL(file)
-        } catch (err) {
-            src = URL.createObjectURL(file)
-        }
-
-        if (!isValidImgFileType(file?.type)) {
-            console.error(`File ${file?.type} is invalid.`)
-            return ''
-        }
-
-        return src
-    }
-
     replaceImageDisplay(publicId: string) {
         const imageData = storage.getItem<ImageData>(publicId)
 
@@ -127,13 +119,14 @@ export class Workspace {
         const img = new Image()
         const image = {
             src,
-            $el: img
+            $el: new Image()
         }
         const imageLayer = new ImageLayer({
             type: 'image',
             image
         })
 
+        img.src = src
         this.layers.setImageDisplay({image})
         this.$canvasContainer.appendChild(img)
         this.canvasLayers.push(imageLayer)
