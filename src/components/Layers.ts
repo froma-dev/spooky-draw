@@ -1,5 +1,5 @@
 import "@styles/Layers.css"
-import {Eye, PlusIcon, TrashFilled, CameraIcon} from "@icons/Icon.ts";
+import {Eye, PlusIcon, TrashFilled, CameraIcon, loadImage} from "@icons/Icon.ts";
 
 export interface ImageDisplayParams {
     image: {
@@ -14,6 +14,7 @@ export default class Layers {
     $transformations: HTMLElement
     $original: HTMLElement
     $cameraButton: HTMLElement
+    dragging: boolean = false
 
     constructor() {
         this.$el = document.createElement('div')
@@ -30,7 +31,7 @@ export default class Layers {
                     <span class="__icons">
                         <button class="icon" id="img-upload">
                             <label for="image_upload">
-                            ${PlusIcon}
+                            ${loadImage}
                             <input 
                             type="file" 
                             id="image_upload" 
@@ -56,9 +57,20 @@ export default class Layers {
 
         document.body.addEventListener('dragover', (ev: DragEvent) => {
             ev.preventDefault()
+            this.dragging = true
+            console.log('dragging', ev)
+            this.$imageLayer.classList.add('dragging')
+        })
+        document.body.addEventListener('dragend', (ev: DragEvent) => {
+            ev.preventDefault()
+            this.$imageLayer.classList.remove('dragging')
+            this.dragging = false
         })
         this.$imageLayer.addEventListener('drop', (ev: DragEvent) => {
             ev.preventDefault()
+            this.$imageLayer.classList.remove('dragging')
+            this.dragging = false
+
             const files = ev.dataTransfer?.files
 
             if (files && files.length) {

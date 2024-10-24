@@ -133,7 +133,6 @@ export class Workspace {
     }
 
     setVideoLayer() {
-        //this.layers.setImageDisplay({image})
         if (!this.videoLayer) {
             this.videoLayer = new VideoLayer({type: 'capture'})
         }

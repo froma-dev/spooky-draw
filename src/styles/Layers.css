@@ -54,6 +54,7 @@
 
         .__icons {
             display: flex;
+            gap: 0.5rem;
             align-items: center;
             background-color: transparent;
             border: none;
@@ -68,6 +69,7 @@
                 cursor: pointer;
 
                 &:hover {
+                    color: var(--gray);
                     background-color: var(--eerie-black-low-opacity);
                 }
             }
@@ -75,14 +77,19 @@
 
         &.--add {
             border: 2px dashed #6100DF;
+            transition: box-shadow 0.35s var(--smooth-timing-function);
 
             .__icons {
                 background-color: transparent;
                 border: none;
             }
+
+            &.dragging {
+                box-shadow: 0 0 20px 20px var(--eerie-black-low-opacity);
+            }
         }
         &.--change {
-            label {
+            .__icons {
                 opacity: 0;
             }
         }
@@ -107,18 +114,11 @@
         }
         &:hover {
             cursor: pointer;
-            border: 2px solid var(--layer-border-color);
-            color: var(--gray);
-
-            > div {
-                background-color: var(--eerie-black-low-opacity);
-            }
+            background-color: var(--eerie-black-low-opacity);
 
             &.--change {
                 .__icons {
-                    opacity: 1;
-                }
-                label {
+                    color: var(--eerie-black-low-opacity);
                     opacity: 1;
                 }
             }
