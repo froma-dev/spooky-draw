@@ -7,12 +7,14 @@ import WorkspaceToolBar from "@components/WorkspaceToolBar.ts";
 import {cloud, SuccessfulData} from "@services/Cloud.ts";
 import {storage} from "@services/LocalStorage.ts";
 import VideoLayer from "@components/VideoLayer.ts";
+import {CameraIcon} from "@icons/Icon.ts";
 
 type ImageData = SuccessfulData & {transformations?: string[]}
 
 export class Workspace {
     $el: HTMLElement
     $canvasContainer: HTMLElement
+    $photoBooth: HTMLElement | undefined
     layers: Layers
     canvasLayers: Layer[]
     mergedCanvas: Layer | null = null
@@ -52,17 +54,23 @@ export class Workspace {
         const workspaceToolbar = this.workspaceToolbar = new WorkspaceToolBar()
         const $workspaceToolbar = workspaceToolbar.el
         $workspaceToolbar.addEventListener("click", (ev: Event) => this.onWorkspaceToolbarClick(ev))
-        document.addEventListener('trigger-camera', () => {
-            if (this.videoLayer?.isPlaying) {
-                this.takePhoto()
-            } else {
-                this.setVideoLayer()
-            }
+        document.addEventListener('trigger-camera', () => this.triggerCamera())
+        this.$canvasContainer.addEventListener('click', (ev: Event) => {
+            const target = ev.target as HTMLElement
+
+            if (target.id === 'take-photo') this.triggerCamera()
         })
 
         this.$el.appendChild(this.layers.el)
         this.$el.appendChild(this.$canvasContainer)
         this.$el.appendChild($workspaceToolbar)
+    }
+
+    triggerCamera () {
+        const isVideoPlaying = this.videoLayer?.isPlaying
+
+        if (isVideoPlaying) this.takePhoto()
+        else this.setVideoLayer()
     }
 
     onWorkspaceToolbarClick(ev: Event) {
@@ -137,7 +145,17 @@ export class Workspace {
             this.videoLayer = new VideoLayer({type: 'capture'})
         }
 
-        this.$canvasContainer.appendChild(this.videoLayer.videoEl)
+        const $photoBooth = this.$photoBooth = document.createElement('div')
+        const $takePictureButton = document.createElement('button')
+        $takePictureButton.innerHTML = `
+            ${CameraIcon}
+        `
+        $takePictureButton.classList.add('button', 'take-photo')
+        $takePictureButton.setAttribute('id', 'take-photo')
+        $photoBooth.classList.add('photo-booth')
+        $photoBooth.append(this.videoLayer.videoEl)
+        $photoBooth.append($takePictureButton)
+        this.$canvasContainer.appendChild($photoBooth)
         this.videoLayer.startImageCapture()
     }
 
@@ -146,9 +164,9 @@ export class Workspace {
             this.videoLayer.takePhoto()
                 .then((blob: Blob) => {
                     this.setImages(URL.createObjectURL(blob))
-                    if (this.videoLayer) {
-                        this.$canvasContainer.removeChild(this.videoLayer.videoEl)
+                    if (this.videoLayer && this.$photoBooth) {
                         this.videoLayer.stopImageCapture()
+                        this.$canvasContainer.removeChild(this.$photoBooth)
                     }
                 })
                 .catch((err) => {console.log('Picture failed :(', err)})
