@@ -9,17 +9,17 @@ import {storage} from "@services/LocalStorage.ts";
 import VideoLayer from "@components/VideoLayer.ts";
 import {CameraIcon} from "@icons/Icon.ts";
 import Canvas from "@components/Canvas.ts";
+import {TDrawChangeEvent, type TFileDropEvent} from "@utils/TCustomEvents.ts";
 
-type ImageData = SuccessfulData & {transformations?: string[]}
+type ImageData = SuccessfulData & { transformations?: string[] }
 
 export class Workspace {
     $el: HTMLElement
     $photoBooth: HTMLElement | undefined
     layers: Layers
-    canvasLayers: Layer[]
     mergedCanvas: Layer | null = null
     workspaceToolbar: WorkspaceToolBar
-    videoLayer: VideoLayer | null = null
+    videoCanvas: VideoLayer | null = null
     canvasContainer: Canvas = new Canvas()
 
     constructor() {
@@ -28,46 +28,36 @@ export class Workspace {
 
         this.canvasContainer = new Canvas()
         this.layers = new Layers()
-        this.canvasLayers = []
+        this.workspaceToolbar = new WorkspaceToolBar()
 
-        this.$el.addEventListener("change", (ev: Event) => {
-            const target = ev.target as HTMLInputElement
-            let [file] = target?.files ?? []
-
-            if (!file) return
-            const src = retrieveSrcFromFile(file)
-
-            this.setImages(src)
-        });
-        document.addEventListener("file-drop", ((ev: CustomEvent<File>) => {
-            let file = ev.detail
-
-            if (!file) return
-            const src = retrieveSrcFromFile(file)
-
-            this.setImages(src)
-        }) as EventListener)
-        document.addEventListener("drawchange", ((ev: CustomEvent<HTMLCanvasElement>) => {
-            this.updateCanvasDisplay(ev.detail)
-        }) as EventListener);
-
-        const workspaceToolbar = this.workspaceToolbar = new WorkspaceToolBar()
-        const $workspaceToolbar = workspaceToolbar.el
-        $workspaceToolbar.addEventListener("click", (ev: Event) => this.onWorkspaceToolbarClick(ev))
-        document.addEventListener('trigger-camera', () => this.triggerCamera())
-        // this.$canvasContainer.addEventListener('click', (ev: Event) => {
-        //     const target = ev.target as HTMLElement
-        //
-        //     if (target.id === 'take-photo') this.triggerCamera()
-        // })
+        this.addEventListeners()
 
         this.$el.appendChild(this.layers.el)
         this.$el.appendChild(this.canvasContainer.el)
-        this.$el.appendChild($workspaceToolbar)
+        this.$el.appendChild(this.workspaceToolbar.el)
     }
 
-    triggerCamera () {
-        const isVideoPlaying = this.videoLayer?.isPlaying
+    addEventListeners() {
+        this.$el.addEventListener("change", (ev: Event) => this.onInputChange(ev));
+        document.addEventListener("file-drop", ((ev: TFileDropEvent) => this.onFileDrop(ev.detail)) as EventListener)
+        //document.addEventListener("drawchange", ((ev: TDrawChangeEvent) => this.updateThumbnail(ev.detail)) as EventListener);
+        document.addEventListener('trigger-camera', () => this.triggerCamera())
+        this.workspaceToolbar.el.addEventListener("click", (ev: Event) => this.onWorkspaceToolbarClick(ev)) // TODO: refactor
+    }
+
+    onInputChange(ev: Event) {
+        const target = ev.target as HTMLInputElement
+        let [file] = target?.files ?? []
+
+        if (file) this.setImages(retrieveSrcFromFile(file))
+    }
+
+    onFileDrop(file: File) {
+        if (file) this.setImages(retrieveSrcFromFile(file))
+    }
+
+    triggerCamera() {
+        const isVideoPlaying = this.videoCanvas?.isPlaying
 
         if (isVideoPlaying) this.takePhoto()
         else this.setVideoLayer()
@@ -79,31 +69,31 @@ export class Workspace {
         if ($target?.id === 'submit-prompt') {
             const inputValue = this.workspaceToolbar.retrieveInputValue()
             this.submitPrompt(inputValue)
-        }
-        else if ($target?.id === 'submit-replace-item') {
+        } else if ($target?.id === 'submit-replace-item') {
             const inputValues = this.workspaceToolbar.retrieveInputValues()
             this.submitPrompt(inputValues)
-        }
-        else if ($target?.id === 'change-to-transformed-image') {
+        } else if ($target?.id === 'change-to-transformed-image') {
             const publicId = $target.dataset.publicid
 
             if (publicId) {
                 const $lastCanvas = this.canvasLayers[this.canvasLayers.length - 1]
                 this.replaceImageDisplay(publicId)
                 $lastCanvas.clearCanvas()
-                this.updateCanvasDisplay($lastCanvas.el)
+                this.updateThumbnail($lastCanvas.el)
                 this.workspaceToolbar.clearWorkspace()
             }
         }
     }
 
     setImages(src: string) {
-        if (this.canvasLayers.length === 0) {
-            if (src)
-                this.setImageLayer(src)
-            //this.setCanvasLayer({selected: true})
+        if (!src) return
+        if (this.canvasContainer.hasImageCanvas) {
+            debugger;
+            this.updateThumbnail(src)
+            this.updateImageCanvas(src)
         } else {
-            this.updateImageDisplay(src)
+            this.setImageLayer(src)
+            this.setImageCanvas(src)
         }
     }
 
@@ -117,33 +107,22 @@ export class Workspace {
             : ''
 
         console.log('lastTransformationSrc ', lastTransformationSrc)
-        debugger
         if (lastTransformationSrc) {
-            this.updateImageDisplay(lastTransformationSrc)
-
+            this.updateImageCanvas(lastTransformationSrc)
         }
     }
 
     setImageLayer(src: string) {
-        const img = new Image()
-        const image = {
-            src,
-            $el: new Image()
-        }
-        const imageLayer = new ImageLayer({
-            type: 'image',
-            image
-        })
+        this.layers.setImageLayer(src)
+    }
 
-        img.src = src
-        this.layers.setImageDisplay({image})
-        this.canvasContainer.appendChild(img)
-        this.canvasLayers.push(imageLayer)
+    setImageCanvas(src: string) {
+        this.canvasContainer.setImageCanvas(src)
     }
 
     setVideoLayer() {
-        if (!this.videoLayer) {
-            this.videoLayer = new VideoLayer({type: 'capture'})
+        if (!this.videoCanvas) {
+            this.videoCanvas = new VideoLayer({type: 'capture'})
         }
 
         const $photoBooth = this.$photoBooth = document.createElement('div')
@@ -154,45 +133,34 @@ export class Workspace {
         $takePictureButton.classList.add('button', 'take-photo')
         $takePictureButton.setAttribute('id', 'take-photo')
         $photoBooth.classList.add('photo-booth')
-        $photoBooth.append(this.videoLayer.videoEl)
+        $photoBooth.append(this.videoCanvas.videoEl)
         $photoBooth.append($takePictureButton)
         this.canvasContainer.appendChild($photoBooth)
-        this.videoLayer.startImageCapture()
+        this.videoCanvas.startImageCapture()
     }
 
-    takePhoto () {
-        if (this.videoLayer) {
-            this.videoLayer.takePhoto()
+    takePhoto() {
+        if (this.videoCanvas) {
+            this.videoCanvas.takePhoto()
                 .then((blob: Blob) => {
                     this.setImages(URL.createObjectURL(blob))
-                    if (this.videoLayer && this.$photoBooth) {
-                        this.videoLayer.stopImageCapture()
+                    if (this.videoCanvas && this.$photoBooth) {
+                        this.videoCanvas.stopImageCapture()
                         this.canvasContainer.removeChild(this.$photoBooth)
                     }
                 })
-                .catch((err) => {console.log('Picture failed :(', err)})
+                .catch((err) => {
+                    console.log('Picture failed :(', err)
+                })
         }
     }
 
-    updateImageDisplay(src: string) {
-        if (src) {
-            const {imageEl} = this.canvasLayers[0] as ImageLayer
-            imageEl.src = src
-        }
+    updateImageCanvas(src: string) {
+        this.canvasContainer.updateImageCanvas(src)
     }
 
-    updateCanvasDisplay($canvas: HTMLCanvasElement) {
-        this.layers.updateCanvasDisplay($canvas)
-    }
-
-    mergeCanvasLayers() {
-        let mergedCanvasLayers = this.mergedCanvas = new Layer({type: 'canvas'})
-        const ctxMergedCanvasLayers = mergedCanvasLayers.el.getContext('2d')
-        //mergedCanvasLayers.setCanvasSize(this.$canvasContainer.clientWidth, this.$canvasContainer.clientHeight)
-
-        this.canvasLayers.forEach(canvasLayer => {
-            ctxMergedCanvasLayers?.drawImage(canvasLayer.el, 0, 0)
-        })
+    updateThumbnail(src: string) {
+        this.layers.updateThumbnail(src)
     }
 
     async saveCanvas() {
@@ -226,9 +194,6 @@ export class Workspace {
     }
 
     async uploadFile() {
-        this.mergeCanvasLayers()
-        if (!this.mergedCanvas) return
-
         this.workspaceToolbar.appendOutputStatus({status: 'Uploading your masterpiece...', icon: 'loading'})
         const blob = await getCanvasBlob(this.mergedCanvas.el)
 

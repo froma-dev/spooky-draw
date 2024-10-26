@@ -82,16 +82,14 @@ export default class Layers {
         })
     }
 
-    setImageDisplay({image}: ImageDisplayParams) {
-        const imageLayer = this.$el.querySelector('.--image')
-        const {src, $el: $image} = image
+    setImageLayer(src: string) {
+        const $image = document.createElement('img')
+        $image.classList.add('thumbnail-image')
 
         $image.addEventListener('load', () => this.onImageDisplayLoad())
         $image.src = src
 
-        console.log('setImageDisplay = ', imageLayer, $image)
-
-        imageLayer?.appendChild($image)
+        this.$imageLayer?.appendChild($image)
     }
 
     onImageDisplayLoad() {
@@ -136,13 +134,14 @@ export default class Layers {
         this.$transformations.appendChild(layer)
     }
 
-    updateCanvasDisplay(canvas: HTMLCanvasElement) {
-        const backgroundImage: HTMLImageElement | null = this.$el.querySelector('.__background')
+    updateThumbnail(src: string) {
+        const changeImage: HTMLElement | null = this.$el.querySelector('.--change')
+        if (!changeImage) return
 
-        if (!backgroundImage) return
-
-        backgroundImage.crossOrigin = 'anonymous'
-        backgroundImage.src = canvas.toDataURL("image/png", 1.0)
+        const $image: HTMLImageElement | null = changeImage.querySelector('.thumbnail-image')
+        if (!$image) return
+        $image.crossOrigin = 'anonymous'
+        $image.src = src
     }
 
     get el() {

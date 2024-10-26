@@ -1,5 +1,6 @@
 export default class Canvas {
     $el: HTMLElement
+    $imageCanvas: HTMLImageElement | null = null
 
     constructor() {
         this.$el = document.createElement('div')
@@ -16,16 +17,38 @@ export default class Canvas {
         })
     }
 
-    appendChild(child: HTMLElement) {
+    appendChild<T extends HTMLElement>(child: T) {
         this.$el.appendChild(child)
     }
 
-    removeChild(child: HTMLElement) {
-        this.$el.removeChild(child)
+    removeChild<T extends HTMLElement>(child: T) {
+        this.$el.removeChild<T>(child)
     }
 
     triggerCamera() {
         console.log('trigger camera!')
+    }
+
+    setImageCanvas(src: string) {
+        const img = this.$imageCanvas = new Image()
+        img.classList.add('image-canvas')
+        img.src = src
+
+        this.appendChild(img)
+    }
+
+    updateImageCanvas(src: string) {
+        if (this.$imageCanvas !== null) {
+            this.$imageCanvas.src = src
+        }
+    }
+
+    removeImageCanvas() {
+        if (this.$imageCanvas !== null) this.removeChild(this.$imageCanvas)
+    }
+
+    get hasImageCanvas(){
+        return this.$imageCanvas !== null
     }
 
     get el() {
