@@ -8,25 +8,25 @@ import {cloud, SuccessfulData} from "@services/Cloud.ts";
 import {storage} from "@services/LocalStorage.ts";
 import VideoLayer from "@components/VideoLayer.ts";
 import {CameraIcon} from "@icons/Icon.ts";
+import Canvas from "@components/Canvas.ts";
 
 type ImageData = SuccessfulData & {transformations?: string[]}
 
 export class Workspace {
     $el: HTMLElement
-    $canvasContainer: HTMLElement
     $photoBooth: HTMLElement | undefined
     layers: Layers
     canvasLayers: Layer[]
     mergedCanvas: Layer | null = null
     workspaceToolbar: WorkspaceToolBar
     videoLayer: VideoLayer | null = null
+    canvasContainer: Canvas = new Canvas()
 
     constructor() {
         this.$el = document.createElement('section')
         this.$el.classList.add('workspace')
 
-        this.$canvasContainer = document.createElement('div')
-        this.$canvasContainer.classList.add('canvas-container')
+        this.canvasContainer = new Canvas()
         this.layers = new Layers()
         this.canvasLayers = []
 
@@ -55,14 +55,14 @@ export class Workspace {
         const $workspaceToolbar = workspaceToolbar.el
         $workspaceToolbar.addEventListener("click", (ev: Event) => this.onWorkspaceToolbarClick(ev))
         document.addEventListener('trigger-camera', () => this.triggerCamera())
-        this.$canvasContainer.addEventListener('click', (ev: Event) => {
-            const target = ev.target as HTMLElement
-
-            if (target.id === 'take-photo') this.triggerCamera()
-        })
+        // this.$canvasContainer.addEventListener('click', (ev: Event) => {
+        //     const target = ev.target as HTMLElement
+        //
+        //     if (target.id === 'take-photo') this.triggerCamera()
+        // })
 
         this.$el.appendChild(this.layers.el)
-        this.$el.appendChild(this.$canvasContainer)
+        this.$el.appendChild(this.canvasContainer.el)
         this.$el.appendChild($workspaceToolbar)
     }
 
@@ -99,8 +99,9 @@ export class Workspace {
 
     setImages(src: string) {
         if (this.canvasLayers.length === 0) {
-            if (src) this.setImageLayer(src)
-            this.setCanvasLayer({selected: true})
+            if (src)
+                this.setImageLayer(src)
+            //this.setCanvasLayer({selected: true})
         } else {
             this.updateImageDisplay(src)
         }
@@ -136,7 +137,7 @@ export class Workspace {
 
         img.src = src
         this.layers.setImageDisplay({image})
-        this.$canvasContainer.appendChild(img)
+        this.canvasContainer.appendChild(img)
         this.canvasLayers.push(imageLayer)
     }
 
@@ -155,7 +156,7 @@ export class Workspace {
         $photoBooth.classList.add('photo-booth')
         $photoBooth.append(this.videoLayer.videoEl)
         $photoBooth.append($takePictureButton)
-        this.$canvasContainer.appendChild($photoBooth)
+        this.canvasContainer.appendChild($photoBooth)
         this.videoLayer.startImageCapture()
     }
 
@@ -166,24 +167,11 @@ export class Workspace {
                     this.setImages(URL.createObjectURL(blob))
                     if (this.videoLayer && this.$photoBooth) {
                         this.videoLayer.stopImageCapture()
-                        this.$canvasContainer.removeChild(this.$photoBooth)
+                        this.canvasContainer.removeChild(this.$photoBooth)
                     }
                 })
                 .catch((err) => {console.log('Picture failed :(', err)})
         }
-    }
-
-    setCanvasLayer({selected}: { selected: boolean }) {
-        const canvasLayer = new Layer({type: 'canvas'})
-
-        // Empty canvas
-        canvasLayer.setCanvasSize(this.$canvasContainer.clientWidth, this.$canvasContainer.clientHeight)
-        this.layers.setCanvasDisplay({selected})
-        this.$canvasContainer.appendChild(canvasLayer.el)
-        this.canvasLayers.push(canvasLayer)
-
-        // New canvas
-        // this.layers.setEmptyCanvasLayer()
     }
 
     updateImageDisplay(src: string) {
@@ -200,7 +188,7 @@ export class Workspace {
     mergeCanvasLayers() {
         let mergedCanvasLayers = this.mergedCanvas = new Layer({type: 'canvas'})
         const ctxMergedCanvasLayers = mergedCanvasLayers.el.getContext('2d')
-        mergedCanvasLayers.setCanvasSize(this.$canvasContainer.clientWidth, this.$canvasContainer.clientHeight)
+        //mergedCanvasLayers.setCanvasSize(this.$canvasContainer.clientWidth, this.$canvasContainer.clientHeight)
 
         this.canvasLayers.forEach(canvasLayer => {
             ctxMergedCanvasLayers?.drawImage(canvasLayer.el, 0, 0)
