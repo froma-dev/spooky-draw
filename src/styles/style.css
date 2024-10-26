@@ -14,8 +14,8 @@
   --cambridge-blue: hsla(154, 34%, 59%, 1);
   --british-racing-green: hsla(150, 100%, 12%, 1);
   --night: hsla(154, 89%, 4%, 1);
-  --eerie-black: hsl(0, 0%, 10%);
-  --eerie-black-low-opacity: hsla(0, 0%, 18%, 0.68);
+  --eerie-black: hsl(0 1% 1% / 1);
+  --eerie-black-low-opacity: hsl(0deg 0% 32.86% / 85%);
   --witch: 	hsl(237, 100%, 70%, 1);
   --gray: hsl(0, 0%, 82%);
   --green-success: hsl(150deg 64.78% 41.26%);

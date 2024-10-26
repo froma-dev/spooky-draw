@@ -101,6 +101,8 @@
                 align-items: end;
                 overflow: hidden;
                 width: 100%;
+                padding: 0;
+                border-radius: 1rem;
 
                 img {
                     grid-column: 1;
