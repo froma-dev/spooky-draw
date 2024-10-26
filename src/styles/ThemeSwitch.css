@@ -2,6 +2,7 @@
     --border-color: var(--honeydew);
     --border-color-hover: #646cff;
 
+    flex-shrink: 0;
     width: 64px;
     height: 64px;
     overflow: hidden;

@@ -26,7 +26,6 @@ export default class Layers {
         this.$original.classList.add('original')
 
         this.$original.innerHTML = `
-            <h3>Original</h3>
             <div class="layer --add --image">
                     <span class="__icons">
                         <button class="icon" id="img-upload">
@@ -47,7 +46,6 @@ export default class Layers {
                     </span>
             </div>
         `
-        this.$transformations.innerHTML = `<h3>Transformations</h3>`
         this.$el.appendChild(this.$original)
         this.$el.appendChild(this.$transformations)
 

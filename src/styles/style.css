@@ -66,10 +66,9 @@ body {
   margin: 0 auto;
   padding: 2rem;
   display: grid;
-  place-items: center;
-  align-content: space-between;
   min-width: 320px;
-  min-height: 100vh;
+  min-height: 100dvh;
+  grid-template-rows: auto 1fr auto;
 }
 
 h1 {

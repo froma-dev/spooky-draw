@@ -23,11 +23,15 @@
             display: flex;
             gap: 0.5rem;
             align-items: stretch;
+            flex-wrap: wrap;
+            width: 100%;
 
             .prompters {
                 display: flex;
                 flex-direction: column;
                 gap: 0.5rem;
+                align-items: stretch;
+                flex: 1;
             }
 
             .input {
@@ -36,6 +40,7 @@
                 transition: border-color 0.2s ease-in-out;
                 font-size: 1.4rem;
                 padding: 0.5rem;
+                min-width: 100%;
 
                 &:focus, &:active {
                     background-color: var(--eerie-black-low-opacity);
@@ -135,6 +140,18 @@
 
         img {
             border-radius: 1rem;
+        }
+    }
+}
+
+@media (width <= 720px) {
+    #workspace-toolbar {
+        .inputs {
+            .prompt-bar {
+                .prompters {
+
+                }
+            }
         }
     }
 }
