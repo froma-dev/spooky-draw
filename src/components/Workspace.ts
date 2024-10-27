@@ -2,20 +2,17 @@ import '@styles/Workspace.css'
 import Layers from "@components/Layers.ts";
 import Layer from "@components/Layer.ts";
 import {retrieveSrcFromFile, getCanvasBlob} from "@utils/utils.ts";
-import ImageLayer from "@components/ImageLayer.ts";
 import WorkspaceToolBar from "@components/WorkspaceToolBar.ts";
 import {cloud, SuccessfulData} from "@services/Cloud.ts";
 import {storage} from "@services/LocalStorage.ts";
 import VideoLayer from "@components/VideoLayer.ts";
-import {CameraIcon} from "@icons/Icon.ts";
 import Canvas from "@components/Canvas.ts";
-import {TDrawChangeEvent, type TFileDropEvent} from "@utils/TCustomEvents.ts";
+import {type TFileDropEvent} from "@utils/TCustomEvents.ts";
 
 type ImageData = SuccessfulData & { transformations?: string[] }
 
 export class Workspace {
     $el: HTMLElement
-    $photoBooth: HTMLElement | undefined
     layers: Layers
     mergedCanvas: Layer | null = null
     workspaceToolbar: WorkspaceToolBar
@@ -40,7 +37,6 @@ export class Workspace {
     addEventListeners() {
         this.$el.addEventListener("change", (ev: Event) => this.onInputChange(ev));
         document.addEventListener("file-drop", ((ev: TFileDropEvent) => this.onFileDrop(ev.detail)) as EventListener)
-        //document.addEventListener("drawchange", ((ev: TDrawChangeEvent) => this.updateThumbnail(ev.detail)) as EventListener);
         document.addEventListener('trigger-camera', () => this.triggerCamera())
         this.workspaceToolbar.el.addEventListener("click", (ev: Event) => this.onWorkspaceToolbarClick(ev)) // TODO: refactor
     }
@@ -59,8 +55,11 @@ export class Workspace {
     triggerCamera() {
         const isVideoPlaying = this.videoCanvas?.isPlaying
 
-        if (isVideoPlaying) this.takePhoto()
-        else this.setVideoLayer()
+        if (isVideoPlaying) {
+            this.previewPhoto()
+        } else {
+            this.openPhotoBooth()
+        }
     }
 
     onWorkspaceToolbarClick(ev: Event) {
@@ -88,7 +87,6 @@ export class Workspace {
     setImages(src: string) {
         if (!src) return
         if (this.canvasContainer.hasImageCanvas) {
-            debugger;
             this.updateThumbnail(src)
             this.updateImageCanvas(src)
         } else {
@@ -120,39 +118,50 @@ export class Workspace {
         this.canvasContainer.setImageCanvas(src)
     }
 
-    setVideoLayer() {
+    removeVideoLayer() {
+        if (this.videoCanvas) {
+            this.canvasContainer.removeChild(this.videoCanvas.el)
+        }
+    }
+
+    previewPhoto() {
+        this.videoCanvas?.previewPhoto()
+            .then((approved) => {
+                if (approved) {
+                    this.takePhoto()
+                } else {
+                    this.retryPhoto()
+                }
+            })
+    }
+
+    takePhoto() {
+        return this.videoCanvas?.takePhoto()
+            .then(blob => this.onPhotoTaken(blob))
+            .catch((err) => console.log('Picture failed :(', err))
+    }
+
+    onPhotoTaken(blob: Blob) {
+        this.setImages(URL.createObjectURL(blob))
+        this.canvasContainer.showImageCanvas()
+        if (this.videoCanvas) {
+            this.videoCanvas.closePhotoBooth()
+            this.canvasContainer.removeChild(this.videoCanvas.el)
+        }
+    }
+
+    openPhotoBooth() {
         if (!this.videoCanvas) {
             this.videoCanvas = new VideoLayer({type: 'capture'})
         }
 
-        const $photoBooth = this.$photoBooth = document.createElement('div')
-        const $takePictureButton = document.createElement('button')
-        $takePictureButton.innerHTML = `
-            ${CameraIcon}
-        `
-        $takePictureButton.classList.add('button', 'take-photo')
-        $takePictureButton.setAttribute('id', 'take-photo')
-        $photoBooth.classList.add('photo-booth')
-        $photoBooth.append(this.videoCanvas.videoEl)
-        $photoBooth.append($takePictureButton)
-        this.canvasContainer.appendChild($photoBooth)
-        this.videoCanvas.startImageCapture()
+        this.canvasContainer.hideImageCanvas()
+        this.videoCanvas.openPhotoBooth()
+        this.canvasContainer.appendChild(this.videoCanvas.el)
     }
 
-    takePhoto() {
-        if (this.videoCanvas) {
-            this.videoCanvas.takePhoto()
-                .then((blob: Blob) => {
-                    this.setImages(URL.createObjectURL(blob))
-                    if (this.videoCanvas && this.$photoBooth) {
-                        this.videoCanvas.stopImageCapture()
-                        this.canvasContainer.removeChild(this.$photoBooth)
-                    }
-                })
-                .catch((err) => {
-                    console.log('Picture failed :(', err)
-                })
-        }
+    retryPhoto() {
+        this.videoCanvas?.retakePhoto()
     }
 
     updateImageCanvas(src: string) {

@@ -62,32 +62,69 @@
             object-fit: contain;
             width: 100%;
             height: 100%;
+            opacity: 1;
+            transition: opacity 1s var(--smooth-timing-function);
+
+            &.hidden {
+                opacity: 0;
+            }
         }
 
         .photo-booth {
-            display: flex;
+            display: grid;
+            align-items: center;
             justify-items: center;
             overflow: hidden;
-            height: 100%;
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 100%;
+            grid-row: 1;
+            grid-column: 1;
+            opacity: 0;
+            transition: opacity 1s var(--smooth-timing-function);
+
+            &.active {
+                opacity: 1;
+            }
 
             &:hover {
-                .take-photo {
-                    transform: translateY(-10%);
+                .photo-booth-controls {
+                    .button {
+                        transform: translate(10%, -10%);
+                    }
                 }
             }
 
-            .take-photo {
-                transition: transform 0.8s var(--smooth-timing-function);
-                transform: translateY(120%);
+            .photo-booth-controls {
+                display: flex;
+                gap: 0.5rem;
+                align-items: center;
+                justify-content: center;
+                align-self: flex-end;
+                justify-self: flex-start;
                 grid-column: 1;
                 grid-row: 1;
-                align-self: end;
-                border-radius: 50%;
-                border: 2px solid var(--layer-border-color);
-                padding: 1.5rem;
 
-                svg {
-                    pointer-events: none;
+                .button {
+                    transition: transform 0.8s var(--smooth-timing-function), background-color 0.8s var(--smooth-timing-function);
+                    transform: translateY(100%);
+                    align-self: flex-end;
+                    border-radius: 50%;
+                    border: 2px solid var(--layer-border-color);
+                    padding: 1.5rem;
+
+                    &.approve-photo {
+                        color: var(--green-success);
+                    }
+
+                    &.reject-photo {
+                        color: var(--engineering-orange);
+                    }
+
+                    svg {
+                        pointer-events: none;
+                    }
                 }
             }
 

@@ -47,6 +47,14 @@ export default class Canvas {
         if (this.$imageCanvas !== null) this.removeChild(this.$imageCanvas)
     }
 
+    hideImageCanvas() {
+        if (this.$imageCanvas !== null) this.$imageCanvas.classList.add('hidden')
+    }
+
+    showImageCanvas() {
+        if (this.$imageCanvas !== null) this.$imageCanvas.classList.remove('hidden')
+    }
+
     get hasImageCanvas(){
         return this.$imageCanvas !== null
     }

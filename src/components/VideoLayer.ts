@@ -1,5 +1,5 @@
-import Layer, {type LayerParams} from "@components/Layer.ts"
 import {getCanvasBlob} from "@utils/utils.ts";
+import {CameraIcon, CheckIcon, XIcon} from "@icons/Icon.ts";
 
 export interface VideoLayerParams {
     type?: string
@@ -12,15 +12,21 @@ const DEFAULT_MIN_HEIGHT = 480
 const DEFAULT_IDEAL_WIDTH = 1920
 const DEFAULT_IDEAL_HEIGHT = 1080
 
-export default class VideoLayer extends Layer {
+export default class VideoLayer {
     $video: HTMLVideoElement = document.createElement('video')
     autoplay: boolean = true
     currentSrc: VideoSource | null = null
     type: string = 'video'
-    plabackStarted: boolean = false
+    playbackStarted: boolean = false
+    $photoBooth: HTMLDivElement = document.createElement('div')
+    $photoBoothControls: HTMLDivElement = document.createElement('div')
 
     constructor(params: VideoLayerParams) {
-        super({type: params.type} as LayerParams)
+        this.$photoBooth.classList.add('photo-booth')
+        this.$photoBoothControls.classList.add('photo-booth-controls')
+
+        this.$photoBooth.append(this.$video)
+        this.$photoBooth.append(this.$photoBoothControls)
 
         this.setType(params.type ?? this.type)
         this.addEventListeners()
@@ -32,7 +38,7 @@ export default class VideoLayer extends Layer {
         this.$video.classList.add(this.type)
     }
 
-    addEventListeners () {
+    addEventListeners() {
         this.$video.addEventListener('canplay', () => this.oncanplay())
         this.$video.addEventListener('play', () => this.onplay())
     }
@@ -56,8 +62,8 @@ export default class VideoLayer extends Layer {
 
     play() {
         this.$video.play()
-            .then(()=>console.log('video played'))
-            .catch(()=>console.log('video could not be played'))
+            .then(() => console.log('video played'))
+            .catch(() => console.log('video could not be played'))
     }
 
     pause() {
@@ -67,10 +73,13 @@ export default class VideoLayer extends Layer {
     stop() {
         this.$video.pause()
         this.$video.currentTime = 0
+        this.$video.srcObject = null
+        this.$video.src = ''
+        this.onstop()
     }
 
     onplay() {
-        this.plabackStarted = true
+        this.playbackStarted = true
     }
 
     onpause() {
@@ -78,18 +87,18 @@ export default class VideoLayer extends Layer {
     }
 
     onstop() {
-        this.plabackStarted = false
+        this.playbackStarted = false
     }
 
     get isPlaying() {
-        return this.plabackStarted
+        return this.playbackStarted
     }
 
     startImageCapture() {
         const mediaStreamConstraints = {
             video: {
-                width: { min: DEFAULT_MIN_WIDTH, ideal: DEFAULT_IDEAL_WIDTH },
-                height: { min: DEFAULT_MIN_HEIGHT, ideal: DEFAULT_IDEAL_HEIGHT },
+                width: {min: DEFAULT_MIN_WIDTH, ideal: DEFAULT_IDEAL_WIDTH},
+                height: {min: DEFAULT_MIN_HEIGHT, ideal: DEFAULT_IDEAL_HEIGHT},
                 aspectRatio: {
                     min: DEFAULT_MIN_WIDTH / DEFAULT_MIN_HEIGHT,
                     ideal: DEFAULT_IDEAL_WIDTH / DEFAULT_IDEAL_HEIGHT
@@ -99,17 +108,82 @@ export default class VideoLayer extends Layer {
 
         navigator.mediaDevices.getUserMedia(mediaStreamConstraints)
             .then((stream) => this.load(stream))
-            .catch((err: Error) => {console.error('Error accessing user media', err)})
+            .catch((err: Error) => {
+                console.error('Error accessing user media', err)
+            })
     }
 
     stopImageCapture() {
-        if (typeof this.currentSrc === 'string') {
-            this.stop()
-        } else {
-            const tracks = this.currentSrc?.getTracks();
-            tracks?.forEach((track) => track.stop());
-            this.$video.srcObject = null;
+        if (typeof this.currentSrc !== 'string')  {
+            const tracks = this.currentSrc?.getTracks()
+            tracks?.forEach((track) => track.stop())
         }
+
+        this.stop()
+    }
+
+    async previewPhoto() {
+        this.pause()
+        this.removeAllControls()
+        const [approvePhotoButton, rejectPhotoButton] = this.addConfirmationControls()
+
+        return new Promise<boolean>((resolve) => {
+            approvePhotoButton.addEventListener('click', () => resolve(true), {once: true})
+            rejectPhotoButton.addEventListener('click', () => resolve(false), {once: true})
+        })
+    }
+
+    addTakePhotoButton() {
+        const takePhotoButton = document.createElement('button')
+        takePhotoButton.classList.add('button', 'take-photo')
+        takePhotoButton.setAttribute('id', 'take-photo')
+        takePhotoButton.innerHTML = `${CameraIcon}`
+        takePhotoButton.addEventListener('click', (ev: MouseEvent) => this.triggerCamera(ev), {once: true})
+
+        this.$photoBoothControls.append(takePhotoButton)
+    }
+
+    removeTakePhotoButton() {
+        const $takePhotoButton = this.$photoBoothControls.querySelector('.take-photo')
+
+        if ($takePhotoButton) $takePhotoButton.remove()
+    }
+
+    addConfirmationControls() {
+        const approvePhotoButton = document.createElement('button')
+        approvePhotoButton.classList.add('button', 'approve-photo')
+        approvePhotoButton.setAttribute('id', 'approve-photo')
+        approvePhotoButton.innerHTML = `${CheckIcon}`
+        approvePhotoButton.classList.add('button', 'approve-photo')
+
+        const rejectPhotoButton = document.createElement('button')
+        rejectPhotoButton.classList.add('button', 'reject-photo')
+        rejectPhotoButton.setAttribute('id', 'reject-photo')
+        rejectPhotoButton.innerHTML = `${XIcon}`
+        rejectPhotoButton.classList.add('button', 'reject-photo')
+
+        this.$photoBoothControls.append(approvePhotoButton, rejectPhotoButton)
+
+        return [approvePhotoButton, rejectPhotoButton]
+    }
+
+    removeConfirmControls() {
+        const $approvePhotoButton = this.$photoBoothControls.querySelector('.approve-photo')
+        const $rejectPhotoButton = this.$photoBoothControls.querySelector('.reject-photo')
+
+        if ($approvePhotoButton) $approvePhotoButton.remove()
+        if ($rejectPhotoButton) $rejectPhotoButton.remove()
+    }
+
+    removeAllControls() {
+        this.removeConfirmControls()
+        this.removeTakePhotoButton()
+    }
+
+    retakePhoto() {
+        this.play()
+        this.removeConfirmControls()
+        this.addTakePhotoButton()
     }
 
     async takePhoto() {
@@ -123,11 +197,28 @@ export default class VideoLayer extends Layer {
         return getCanvasBlob(canvas)
     }
 
+    openPhotoBooth() {
+        this.$photoBooth.classList.add('active')
+        this.startImageCapture()
+        this.addTakePhotoButton()
+    }
+
+    closePhotoBooth() {
+        this.$photoBooth.classList.remove('active')
+        this.stopImageCapture()
+        this.removeAllControls()
+    }
+
+    triggerCamera(ev: MouseEvent) {
+        ev.stopPropagation()
+        document.dispatchEvent(new CustomEvent('trigger-camera'))
+    }
+
     getAspectRatio() {
         return this.$video.videoWidth / this.$video.videoHeight
     }
 
-    get videoEl() {
-        return this.$video
+    get el() {
+        return this.$photoBooth
     }
 }

@@ -20,6 +20,7 @@
   --gray: hsl(0, 0%, 82%);
   --green-success: hsl(150deg 64.78% 41.26%);
   --blue-item: hsl(205, 100%, 34%);
+  --bright-white: #f6f6f6;
 
   transition: background-color 0.4s ease-in-out;
   --smooth-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
@@ -28,7 +29,11 @@
     color: var(--eerie-black);
     background-color: var(--honeydew);
     color-scheme: light;
-    --layer-border-color: var(--eerie-black)
+    --layer-border-color: var(--eerie-black);
+    --button-text-color: var(--gray);
+    --button-background-color: var(--eerie-black);
+    --button-background-color-hover: var(--eerie-black-low-opacity);
+    --button-border-color: var(--eerie-black);
   }
 
   &.dark {
@@ -36,6 +41,10 @@
     background-color: var(--eerie-black);
     color-scheme: dark;
     --layer-border-color: var(--honeydew);
+    --button-text-color: var(--eerie-black);
+    --button-background-color: var(--gray);
+    --button-background-color-hover: var(--bright-white);
+    --button-border-color: var(--eerie-black);
   }
 
 }

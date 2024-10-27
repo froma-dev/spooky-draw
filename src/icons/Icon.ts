@@ -80,3 +80,13 @@ export const loadImage = `
 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40" fill="none">
   <path d="M25 13.3333H25.0167M20.8333 35H10C8.67392 35 7.40215 34.4732 6.46447 33.5355C5.52678 32.5979 5 31.3261 5 30V10C5 8.67392 5.52678 7.40215 6.46447 6.46447C7.40215 5.52678 8.67392 5 10 5H30C31.3261 5 32.5979 5.52678 33.5355 6.46447C34.4732 7.40215 35 8.67392 35 10V20.8333M5 26.6667L13.3333 18.3334C14.88 16.845 16.7867 16.845 18.3333 18.3334L25 25M23.3333 23.3334L25 21.6667C26.1167 20.5934 27.4167 20.2934 28.6367 20.7667M26.6667 31.6667H36.6667M31.6667 26.6667V36.6667" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`
+export const XIcon = `
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40" fill="none">
+  <path d="M30 10L10 30M10 10L30 30" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+`
+export const CheckIcon = `
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40" fill="none">
+  <path d="M8.33325 20L16.6666 28.3334L33.3333 11.6667" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+`
