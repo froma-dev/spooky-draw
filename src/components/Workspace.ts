@@ -1,7 +1,7 @@
 import '@styles/Workspace.css'
 import Layers from "@components/Layers.ts";
 import Layer from "@components/Layer.ts";
-import {retrieveSrcFromFile, getCanvasBlob} from "@utils/utils.ts";
+import {retrieveSrcFromFile, getCanvasBlob, getImageBlob} from "@utils/utils.ts";
 import WorkspaceToolBar from "@components/WorkspaceToolBar.ts";
 import {cloud, SuccessfulData} from "@services/Cloud.ts";
 import {storage} from "@services/LocalStorage.ts";
@@ -66,10 +66,10 @@ export class Workspace {
         const $target = ev.target as HTMLElement
 
         if ($target?.id === 'submit-prompt') {
-            const inputValue = this.workspaceToolbar.retrieveInputValue()
+            const inputValue = this.workspaceToolbar.retrieveInputValue({clear: true})
             this.submitPrompt(inputValue)
         } else if ($target?.id === 'submit-replace-item') {
-            const inputValues = this.workspaceToolbar.retrieveInputValues()
+            const inputValues = this.workspaceToolbar.retrieveInputValues({clear: true})
             this.submitPrompt(inputValues)
         } else if ($target?.id === 'change-to-transformed-image') {
             const publicId = $target.dataset.publicid
@@ -188,8 +188,6 @@ export class Workspace {
     }
 
     async submitPrompt(inputValue: string | string[]) {
-        this.workspaceToolbar.clearInputValue()
-
         const uploadResult = await this.uploadFile()
 
         if (uploadResult?.success) {
@@ -204,7 +202,7 @@ export class Workspace {
 
     async uploadFile() {
         this.workspaceToolbar.appendOutputStatus({status: 'Uploading your masterpiece...', icon: 'loading'})
-        const blob = await getCanvasBlob(this.mergedCanvas.el)
+        const blob = await this.canvasContainer.getImageBlob()
 
         return await cloud.uploadFile(blob)
     }

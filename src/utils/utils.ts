@@ -5,10 +5,11 @@ const imgFileTypes = [
     "image/svg+xml",
     "image/webp",
 ]
+const canvas = document.createElement('canvas')
 
 export const isValidImgFileType = (fileType: string) => imgFileTypes.includes(fileType)
 
-export const getCanvasBlob = async ($canvas: HTMLCanvasElement) => {
+export async function getCanvasBlob($canvas: HTMLCanvasElement)  {
     const blobPromise = new Promise<Blob>((resolve, reject) => {
         $canvas.toBlob((blob) => {
             if (blob) {
@@ -20,6 +21,17 @@ export const getCanvasBlob = async ($canvas: HTMLCanvasElement) => {
     })
 
     return Promise.resolve(blobPromise)
+}
+
+export async function getImageBlob($image: HTMLImageElement) {
+    const context = canvas.getContext('2d')!
+
+    context.clearRect(0, 0, canvas.width, canvas.height)
+    canvas.width = $image.width
+    canvas.height = $image.height
+    context.drawImage($image, 0, 0)
+
+    return getCanvasBlob(canvas)
 }
 
 export const retrieveSrcFromFile = (file: File) => {

@@ -152,15 +152,22 @@ export default class WorkspaceToolBar {
         }
     }
 
-    retrieveInputValue() {
-        return this.$promptInput.value
+    retrieveInputValue({clear = false}: {clear?: boolean}) {
+        const inputValue = this.$promptInput.value
+        if (clear) this.$promptInput.value = ''
+        return inputValue
     }
 
-    retrieveInputValues() {
+    retrieveInputValues({clear = false}: {clear?: boolean}) {
         const $from = this.$promptBar.querySelector('#replace-this') as HTMLInputElement
         const $to = this.$promptBar.querySelector('#with-this') as HTMLInputElement
+        const inputValues = [$from.value, $to.value]
 
-        return [$from.value, $to.value]
+        if (clear) {
+            $from.value = ''
+            $to.value = ''
+        }
+        return inputValues
     }
 
     clearInputValue() {

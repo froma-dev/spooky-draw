@@ -88,14 +88,6 @@
                 opacity: 1;
             }
 
-            &:hover {
-                .photo-booth-controls {
-                    .button {
-                        transform: translate(10%, -10%);
-                    }
-                }
-            }
-
             .photo-booth-controls {
                 display: flex;
                 gap: 0.5rem;
@@ -105,10 +97,11 @@
                 justify-self: flex-start;
                 grid-column: 1;
                 grid-row: 1;
+                padding: 1rem;
 
                 .button {
                     transition: transform 0.8s var(--smooth-timing-function), background-color 0.8s var(--smooth-timing-function);
-                    transform: translateY(100%);
+                    transform: translate(10%, -10%);
                     align-self: flex-end;
                     border-radius: 50%;
                     border: 2px solid var(--layer-border-color);

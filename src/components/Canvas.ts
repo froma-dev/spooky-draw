@@ -1,3 +1,5 @@
+import {getImageBlob} from "@utils/utils.ts";
+
 export default class Canvas {
     $el: HTMLElement
     $imageCanvas: HTMLImageElement | null = null
@@ -41,6 +43,10 @@ export default class Canvas {
         if (this.$imageCanvas !== null) {
             this.$imageCanvas.src = src
         }
+    }
+
+    async getImageBlob() {
+        return getImageBlob(this.$imageCanvas!)
     }
 
     removeImageCanvas() {
