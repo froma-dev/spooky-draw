@@ -17,13 +17,24 @@
     justify-content: center;
 
     .icon {
+        pointer-events: none;
         svg {
             width: 35px;
             height: 35px;
         }
     }
 
+    .text {
+        pointer-events: none;
+    }
+
     &:hover {
         background-color: var(--button-background-color-hover);
+    }
+
+    &:disabled {
+        background-color: var(--button-background-color-disabled);
+        color: var(--button-text-color-disabled);
+        border-color: var(--button-border-color-disabled);
     }
 }

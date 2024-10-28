@@ -56,7 +56,6 @@ export default class Layers {
         document.body.addEventListener('dragover', (ev: DragEvent) => {
             ev.preventDefault()
             this.dragging = true
-            console.log('dragging', ev)
             this.$imageLayer.classList.add('dragging')
         })
         document.body.addEventListener('dragend', (ev: DragEvent) => {

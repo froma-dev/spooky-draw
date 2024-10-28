@@ -1,7 +1,6 @@
 import '@styles/Workspace.css'
 import Layers from "@components/Layers.ts";
-import Layer from "@components/Layer.ts";
-import {retrieveSrcFromFile, getCanvasBlob, getImageBlob} from "@utils/utils.ts";
+import {retrieveSrcFromFile} from "@utils/utils.ts";
 import WorkspaceToolBar from "@components/WorkspaceToolBar.ts";
 import {cloud, SuccessfulData} from "@services/Cloud.ts";
 import {storage} from "@services/LocalStorage.ts";
@@ -13,19 +12,14 @@ type ImageData = SuccessfulData & { transformations?: string[] }
 
 export class Workspace {
     $el: HTMLElement
-    layers: Layers
-    mergedCanvas: Layer | null = null
-    workspaceToolbar: WorkspaceToolBar
+    layers: Layers = new Layers()
+    workspaceToolbar: WorkspaceToolBar = new WorkspaceToolBar()
     videoCanvas: VideoLayer | null = null
     canvasContainer: Canvas = new Canvas()
 
     constructor() {
         this.$el = document.createElement('section')
         this.$el.classList.add('workspace')
-
-        this.canvasContainer = new Canvas()
-        this.layers = new Layers()
-        this.workspaceToolbar = new WorkspaceToolBar()
 
         this.addEventListeners()
 
@@ -45,11 +39,17 @@ export class Workspace {
         const target = ev.target as HTMLInputElement
         let [file] = target?.files ?? []
 
-        if (file) this.setImages(retrieveSrcFromFile(file))
+        if (file) {
+            this.workspaceToolbar.enablePromptInput()
+            this.setImages(retrieveSrcFromFile(file))
+        }
     }
 
     onFileDrop(file: File) {
-        if (file) this.setImages(retrieveSrcFromFile(file))
+        if (file) {
+            this.workspaceToolbar.enablePromptInput()
+            this.setImages(retrieveSrcFromFile(file))
+        }
     }
 
     triggerCamera() {
@@ -67,25 +67,30 @@ export class Workspace {
 
         if ($target?.id === 'submit-prompt') {
             const inputValue = this.workspaceToolbar.retrieveInputValue({clear: true})
-            this.submitPrompt(inputValue)
+            if (inputValue)
+                this.submitPrompt(inputValue)
+            else
+                this.workspaceToolbar.shakeInput()
         } else if ($target?.id === 'submit-replace-item') {
             const inputValues = this.workspaceToolbar.retrieveInputValues({clear: true})
-            this.submitPrompt(inputValues)
-        } else if ($target?.id === 'change-to-transformed-image') {
-            const publicId = $target.dataset.publicid
 
-            if (publicId) {
-                const $lastCanvas = this.canvasLayers[this.canvasLayers.length - 1]
-                this.replaceImageDisplay(publicId)
-                $lastCanvas.clearCanvas()
-                this.updateThumbnail($lastCanvas.el)
-                this.workspaceToolbar.clearWorkspace()
-            }
+            if (inputValues.length === 2)
+                this.submitPrompt(inputValues)
+            else
+                this.workspaceToolbar.shakeInputs()
+        } else if ($target?.id === 'download-transformation') {
+            const src = $target.dataset.src
+            if (src) this.saveTransformedImage(src)
         }
     }
 
     setImages(src: string) {
         if (!src) return
+
+        if (this.videoCanvas && this.videoCanvas.isPlaying) {
+            this.closePhotoBooth()
+        }
+
         if (this.canvasContainer.hasImageCanvas) {
             this.updateThumbnail(src)
             this.updateImageCanvas(src)
@@ -95,33 +100,12 @@ export class Workspace {
         }
     }
 
-    replaceImageDisplay(publicId: string) {
-        const imageData = storage.getItem<ImageData>(publicId)
-
-        if (!imageData) return
-        const transformationLength = imageData.transformations?.length ?? 0
-        const lastTransformationSrc = imageData.transformations
-            ? imageData.transformations[transformationLength - 1]
-            : ''
-
-        console.log('lastTransformationSrc ', lastTransformationSrc)
-        if (lastTransformationSrc) {
-            this.updateImageCanvas(lastTransformationSrc)
-        }
-    }
-
     setImageLayer(src: string) {
         this.layers.setImageLayer(src)
     }
 
     setImageCanvas(src: string) {
         this.canvasContainer.setImageCanvas(src)
-    }
-
-    removeVideoLayer() {
-        if (this.videoCanvas) {
-            this.canvasContainer.removeChild(this.videoCanvas.el)
-        }
     }
 
     previewPhoto() {
@@ -142,12 +126,10 @@ export class Workspace {
     }
 
     onPhotoTaken(blob: Blob) {
+        this.workspaceToolbar.enablePromptInput()
         this.setImages(URL.createObjectURL(blob))
         this.canvasContainer.showImageCanvas()
-        if (this.videoCanvas) {
-            this.videoCanvas.closePhotoBooth()
-            this.canvasContainer.removeChild(this.videoCanvas.el)
-        }
+        this.closePhotoBooth()
     }
 
     openPhotoBooth() {
@@ -158,6 +140,13 @@ export class Workspace {
         this.canvasContainer.hideImageCanvas()
         this.videoCanvas.openPhotoBooth()
         this.canvasContainer.appendChild(this.videoCanvas.el)
+    }
+
+    closePhotoBooth() {
+        if (this.videoCanvas) {
+            this.videoCanvas.closePhotoBooth()
+            this.canvasContainer.removeChild(this.videoCanvas.el)
+        }
     }
 
     retryPhoto() {
@@ -172,24 +161,20 @@ export class Workspace {
         this.layers.updateThumbnail(src)
     }
 
-    async saveCanvas() {
-        const $canvas = this.mergedCanvas?.el
-        if (!$canvas) return
-
-        const blob = await getCanvasBlob($canvas)
-        const blobUrl = URL.createObjectURL(blob)
+    async saveTransformedImage(src: string) {
         const downloadLink = document.createElement('a')
 
-        downloadLink.href = blobUrl
-        downloadLink.download = 'masterpiece.webp'
+        downloadLink.setAttribute('download', 'masterpiece.webp')
+        downloadLink.setAttribute('href', src)
+        downloadLink.setAttribute('target', '_blank')
         downloadLink.click()
-
-        URL.revokeObjectURL(blobUrl)
+        downloadLink.remove()
     }
 
     async submitPrompt(inputValue: string | string[]) {
         const uploadResult = await this.uploadFile()
 
+        this.workspaceToolbar.disablePromptInput()
         if (uploadResult?.success) {
             const data = uploadResult.data as ImageData
             this.workspaceToolbar.updatePrevOutputStatus({status: 'Image uploaded successfully!', icon: 'success'})
@@ -197,6 +182,7 @@ export class Workspace {
             this.transformImage(data, inputValue)
         } else {
             this.workspaceToolbar.updatePrevOutputStatus({status: 'Image upload failed', icon: 'error'})
+            this.workspaceToolbar.enablePromptInput()
         }
     }
 
@@ -213,7 +199,7 @@ export class Workspace {
             status: `Transforming image into: <span class="prompt">${prompt}</span>`,
             icon: 'loading'
         })
-        this.workspaceToolbar.appendOutputImage({src, imageData})
+        this.workspaceToolbar.appendOutputImage({src})
             .then(() => {
                 this.workspaceToolbar.updatePrevOutputStatus({
                     status: `Image transformed into <span class="prompt">${prompt}</span>`,
@@ -224,9 +210,17 @@ export class Workspace {
             .catch(() => {
                 this.workspaceToolbar.updatePrevOutputStatus({
                     status: `Failed to transform image into <span class="prompt">${prompt}</span>`,
-                    icon: 'error'
+                    icon: 'error',
+                    button: {
+                        icon: 'retry',
+                        text: 'Retry',
+                        onClick: () => {
+                            this.transformImage(imageData, prompt)
+                        }
+                    }
                 })
             })
+            .finally(() => this.workspaceToolbar.enablePromptInput())
     }
 
     saveUploadedReference(uploadResultData: ImageData) {

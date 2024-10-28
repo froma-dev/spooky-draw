@@ -1,23 +1,23 @@
 import "@styles/WorkspaceToolbar.css"
-import {CircleCheck, CircleExclamation, LoadingIcon, PhotoDownload} from "@icons/Icon.ts";
-import {SuccessfulData as IImageData} from "@services/Cloud.ts";
+import {CircleCheck, CircleExclamation, LoadingIcon, PhotoDownload, RetryIcon} from "@icons/Icon.ts";
 
 const mappedStatusIcons = {
     'loading': LoadingIcon,
     'success': CircleCheck,
-    'error': CircleExclamation
+    'error': CircleExclamation,
+    'retry': RetryIcon
 }
 
 type Status = 'loading' | 'error' | 'success'
 
 interface IStatusParams {
     status: string,
-    icon: Status
-}
-
-interface IOutputImageParams {
-    src: string,
-    imageData: IImageData
+    icon: Status,
+    button?: {
+        icon: string,
+        text: string,
+        onClick: () => void
+    }
 }
 
 export default class WorkspaceToolBar {
@@ -25,6 +25,8 @@ export default class WorkspaceToolBar {
     $promptBar: HTMLDivElement
     $outputs: HTMLDivElement
     $promptInput: HTMLInputElement
+    $shakeInputTimeoutID: number | null = null
+    $shakeInputsTimeoutID: number | null = null
 
     constructor() {
         this.$el = document.createElement('div')
@@ -40,76 +42,80 @@ export default class WorkspaceToolBar {
         this.$promptBar.innerHTML = `
             <section class="prompters">
                 <h3>Replace Background</h3>
-                <input type="text" placeholder="Type your prompt" class="input" />
+                <input type="text" placeholder="Type your prompt" class="input"/>
                 <button id="submit-prompt" class="button">Submit</button>
             </section>
             
             <section class="prompters">
                 <h3>Replace Items</h3>
                 <label for="replace-this">
-                    <input id="replace-this" type="text" placeholder="What to replace?" class="input" />
+                    <input id="replace-this" type="text" placeholder="What to replace?" class="input"/>
                 </label>
                 <label for="with-this">
-                    <input id="with-this" type="text" placeholder="What to replace with?" class="input" />
+                    <input id="with-this" type="text" placeholder="What to replace with?" class="input"/>
                 </label>
                 <button id="submit-replace-item" class="button">Submit</button>
             </section>
         `
         this.$promptInput = this.$promptBar.querySelector('.input')!
-        this.$promptInput.addEventListener('change', (ev: Event) => {ev.stopPropagation()})
+        this.$promptInput.addEventListener('change', (ev: Event) => {
+            ev.stopPropagation()
+        })
         $inputs.appendChild(this.$promptBar)
         this.$el.appendChild($inputs)
         this.$el.appendChild(this.$outputs)
+        this.disablePromptInput()
     }
 
     appendPrompt() {
 
     }
 
-    async appendOutputImage({src, imageData}: IOutputImageParams) {
+    async appendOutputImage({src}: { src: string }) {
         return new Promise<void>((resolve, reject) => {
             const $status = document.createElement('div')
             const $transformedImg = document.createElement('img')
+            const onLoad = () => {
+                const $imageActions = this.getImageActions(src)
+                $status.appendChild($imageActions)
+                $status.scrollIntoView({behavior: 'smooth'})
+                resolve()
+                $transformedImg.removeEventListener('error', onError)
+            }
+            const onError = () => {
+                reject()
+                $transformedImg.removeEventListener('load', onLoad)
+                $transformedImg.remove()
+                $status.remove()
+            }
 
+            debugger
             $status.classList.add('status', `--transformed`)
             $transformedImg.classList.add('transformed')
             $transformedImg.crossOrigin = 'anonymous'
-            $transformedImg.onload = () => {
-                const $imageActions = this.getImageActions(imageData.publicId, src)
-                $status.appendChild($imageActions)
-                $status.scrollIntoView({ behavior: 'smooth' })
-                resolve()
-            }
-            $transformedImg.onerror = () => {
-                $transformedImg.src = imageData.secureUrl
-                reject()
-            }
+            $transformedImg.addEventListener('load', onLoad, {once: true})
+            $transformedImg.addEventListener('error', onError, {once: true})
+
             $transformedImg.crossOrigin = 'anonymous'
             $transformedImg.src = src
             $transformedImg.alt = "Transformed image"
 
             $status.appendChild($transformedImg)
-            $status.scrollIntoView({ behavior: 'smooth' })
+            $status.scrollIntoView({behavior: 'smooth'})
             this.$outputs.appendChild($status)
         })
     }
 
-    getImageActions (publicId: string, src: string): HTMLDivElement {
-        const $replaceImageButton = document.createElement('button')
-        $replaceImageButton.classList.add('button', 'change-to-transformed-image')
-        $replaceImageButton.setAttribute('id', 'change-to-transformed-image')
-        $replaceImageButton.setAttribute('data-publicid', publicId)
-        $replaceImageButton.innerHTML = 'Prompt this image'
+    getImageActions(src: string): HTMLDivElement {
+        const $downloadImageButton = document.createElement('button')
+        $downloadImageButton.classList.add('button', 'download-transformation')
+        $downloadImageButton.setAttribute('id', 'download-transformation')
+        $downloadImageButton.setAttribute('data-src', src)
+        $downloadImageButton.innerHTML = `${PhotoDownload} <span class="text">Download</span>`
 
         const $imageActions = document.createElement('div')
         $imageActions.classList.add('options')
-        $imageActions.innerHTML = `
-            <a class="button download-transformation" href=${src} download=${publicId} target="_blank">
-                <span class="icon">${PhotoDownload}</span>
-                <span class="text">Download</span>
-            </a>
-            `
-        $imageActions.append($replaceImageButton)
+        $imageActions.append($downloadImageButton)
 
         return $imageActions
     }
@@ -129,10 +135,10 @@ export default class WorkspaceToolBar {
         `
 
         this.$outputs.appendChild($status)
-        $status.scrollIntoView({ behavior: 'smooth' })
+        $status.scrollIntoView({behavior: 'smooth'})
     }
 
-    updatePrevOutputStatus({status, icon}: IStatusParams) {
+    updatePrevOutputStatus({status, icon, button}: IStatusParams) {
         const $statusList = this.$outputs.querySelectorAll('.--loading')
         const $lastStatus = $statusList[$statusList.length - 1]
         let iconStatus = icon === 'success' ? mappedStatusIcons.success : mappedStatusIcons.error
@@ -147,27 +153,67 @@ export default class WorkspaceToolBar {
         if ($text)
             $text.innerHTML = status
 
+        if (button) {
+            const $button = document.createElement('button')
+            $button.classList.add('button', 'retry')
+            $button.innerHTML = `${mappedStatusIcons['retry']}<span class="text">Retry</span>`
+            $button.setAttribute('id', 'retry-button')
+            $button.addEventListener('click', () => {
+                button.onClick()
+                $button.remove()
+                $lastStatus.remove()
+            }, {once: true})
+            $lastStatus.append($button)
+        }
+
         if (icon === 'error') {
 
         }
     }
 
-    retrieveInputValue({clear = false}: {clear?: boolean}) {
+    retrieveInputValue({clear = false}: { clear?: boolean }) {
         const inputValue = this.$promptInput.value
         if (clear) this.$promptInput.value = ''
         return inputValue
     }
 
-    retrieveInputValues({clear = false}: {clear?: boolean}) {
+    shakeInput() {
+        if (this.$shakeInputTimeoutID) return
+        this.$promptInput.classList.add('shake')
+
+        this.$shakeInputTimeoutID = setTimeout(() => {
+            this.$promptInput.classList.remove('shake')
+            this.$shakeInputTimeoutID = null
+        }, 1000)
+    }
+
+    retrieveInputValues({clear = false}: { clear?: boolean }) {
         const $from = this.$promptBar.querySelector('#replace-this') as HTMLInputElement
         const $to = this.$promptBar.querySelector('#with-this') as HTMLInputElement
-        const inputValues = [$from.value, $to.value]
+        const inputValues = []
 
-        if (clear) {
+        if ($from.value.length > 0) inputValues.push($from.value)
+        if ($to.value.length > 0) inputValues.push($to.value)
+        if (clear && inputValues.length === 2) {
             $from.value = ''
             $to.value = ''
         }
         return inputValues
+    }
+
+    shakeInputs() {
+        if (this.$shakeInputsTimeoutID) return
+        const $from = this.$promptBar.querySelector('#replace-this') as HTMLInputElement
+        const $to = this.$promptBar.querySelector('#with-this') as HTMLInputElement
+
+        if ($from.value.length === 0) $from.classList.add('shake')
+        if ($to.value.length === 0) $to.classList.add('shake')
+
+        this.$shakeInputsTimeoutID = setTimeout(() => {
+            $from.classList.remove('shake')
+            $to.classList.remove('shake')
+            this.$shakeInputsTimeoutID = null
+        }, 1000)
     }
 
     clearInputValue() {
@@ -176,6 +222,44 @@ export default class WorkspaceToolBar {
 
     clearWorkspace() {
         this.$outputs.innerHTML = ''
+    }
+
+    enablePromptInput() {
+        const $from = this.$promptBar.querySelector('#replace-this') as HTMLInputElement
+        const $to = this.$promptBar.querySelector('#with-this') as HTMLInputElement
+        const $submitReplaceButton = this.$promptBar.querySelector('#submit-replace-item') as HTMLButtonElement
+        const $submitButton = this.$promptBar.querySelector('#submit-prompt') as HTMLButtonElement
+
+        this.$promptInput.removeAttribute('disabled')
+        $submitReplaceButton.removeAttribute('disabled')
+        $submitButton.removeAttribute('disabled')
+        $from.removeAttribute('disabled')
+        $to.removeAttribute('disabled')
+
+        this.$promptInput.classList.remove('disabled')
+        $submitReplaceButton.classList.remove('disabled')
+        $submitButton.classList.remove('disabled')
+        $from.classList.remove('disabled')
+        $to.classList.remove('disabled')
+    }
+
+    disablePromptInput() {
+        const $from = this.$promptBar.querySelector('#replace-this') as HTMLInputElement
+        const $to = this.$promptBar.querySelector('#with-this') as HTMLInputElement
+        const $submitReplaceButton = this.$promptBar.querySelector('#submit-replace-item') as HTMLButtonElement
+        const $submitButton = this.$promptBar.querySelector('#submit-prompt') as HTMLButtonElement
+
+        this.$promptInput.setAttribute('disabled', '')
+        $from.setAttribute('disabled', '')
+        $to.setAttribute('disabled', '')
+        $submitReplaceButton.setAttribute('disabled', '')
+        $submitButton.setAttribute('disabled', '')
+
+        this.$promptInput.classList.add('disabled')
+        $from.classList.add('disabled')
+        $to.classList.add('disabled')
+        $submitReplaceButton.classList.add('disabled')
+        $submitButton.classList.add('disabled')
     }
 
     get el() {

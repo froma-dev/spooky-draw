@@ -34,6 +34,13 @@
     --button-background-color: var(--eerie-black);
     --button-background-color-hover: var(--eerie-black-low-opacity);
     --button-border-color: var(--eerie-black);
+
+    --button-background-color-disabled: rgba(239, 239, 239, 0.3);
+    --button-text-color-disabled: rgba(16, 16, 16, 0.3);
+    --button-border-color-disabled: rgba(118, 118, 118, 0.3);
+
+    --output-status-background: var(--gray);
+    --footer-link-color: var(--eerie-black)
   }
 
   &.dark {
@@ -45,6 +52,13 @@
     --button-background-color: var(--gray);
     --button-background-color-hover: var(--bright-white);
     --button-border-color: var(--eerie-black);
+
+    --button-background-color-disabled: rgba(239, 239, 239, 0.3);
+    --button-text-color-disabled: rgba(255, 255, 255, 0.3);
+    --button-border-color-disabled: rgba(118, 118, 118, 0.3);
+
+    --output-status-background: var(--eerie-black);
+    --footer-link-color: var(--gray)
   }
 
 }

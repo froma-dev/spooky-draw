@@ -12,7 +12,7 @@ export default class Header {
         const themeSwitch = new ThemeSwitch({...params} as ThemeSwitchParams)
         this.$el = document.createElement('header')
         this.$el.classList.add('header')
-        this.$el.innerHTML = `<h1>Spooky Draw</h1>`
+        this.$el.innerHTML = `<h1>AI Modification</h1>`
 
         this.$el.appendChild(themeSwitch.el)
     }

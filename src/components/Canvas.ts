@@ -7,16 +7,6 @@ export default class Canvas {
     constructor() {
         this.$el = document.createElement('div')
         this.$el.classList.add('canvas-container')
-
-        this.setListeners()
-    }
-
-    setListeners() {
-        document.addEventListener('click', (ev: Event) => {
-            const target = ev.target as HTMLElement
-
-            if (target.id === 'take-photo') this.triggerCamera()
-        })
     }
 
     appendChild<T extends HTMLElement>(child: T) {
@@ -25,10 +15,6 @@ export default class Canvas {
 
     removeChild<T extends HTMLElement>(child: T) {
         this.$el.removeChild<T>(child)
-    }
-
-    triggerCamera() {
-        console.log('trigger camera!')
     }
 
     setImageCanvas(src: string) {

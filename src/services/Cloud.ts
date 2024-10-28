@@ -106,7 +106,7 @@ class Cloud {
     }
 
     replaceImageBackground(prompt: string, myImage: CloudinaryImage) {
-        myImage.effect(generativeBackgroundReplace().prompt(`${prompt} and make it spooky halloween themed`))
+        myImage.effect(generativeBackgroundReplace().prompt(`${prompt}`))
     }
 }
 

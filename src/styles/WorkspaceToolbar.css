@@ -42,6 +42,10 @@
                 padding: 0.5rem;
                 min-width: 100%;
 
+                &.shake {
+                    animation: shake 0.8s ease-in-out forwards;
+                }
+
                 &:focus, &:active {
                     background-color: var(--eerie-black-low-opacity);
                     border-color: var(--gray);
@@ -63,7 +67,7 @@
             display: flex;
             align-items: center;
             border: 2px solid var(--eerie-black-low-opacity);
-            background: var(--eerie-black-low-opacity);
+            background: var(--output-status-background);
             padding: 0.5rem;
             border-radius: 0.5rem;
             gap: 0.5rem;
