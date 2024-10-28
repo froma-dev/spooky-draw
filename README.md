@@ -16,7 +16,7 @@ A simple web application that utilizes the Cloudinary API to replace backgrounds
 - **Image Download**:
     - Download the transformed image to your device for later use.
 
-## screenshots
+## Screenshots
 **Prompt**
 ![image](/public/front.png)
 **Image transformation**
