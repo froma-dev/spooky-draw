@@ -32,6 +32,7 @@ export class Workspace {
         this.$el.addEventListener("change", (ev: Event) => this.onInputChange(ev));
         document.addEventListener("file-drop", ((ev: TFileDropEvent) => this.onFileDrop(ev.detail)) as EventListener)
         document.addEventListener('trigger-camera', () => this.triggerCamera())
+        document.addEventListener('cancel-camera', () => this.cancelCamera())
         this.workspaceToolbar.el.addEventListener("click", (ev: Event) => this.onWorkspaceToolbarClick(ev)) // TODO: refactor
     }
 
@@ -60,6 +61,10 @@ export class Workspace {
         } else {
             this.openPhotoBooth()
         }
+    }
+
+    cancelCamera() {
+        this.closePhotoBooth()
     }
 
     onWorkspaceToolbarClick(ev: Event) {
@@ -144,6 +149,7 @@ export class Workspace {
 
     closePhotoBooth() {
         if (this.videoCanvas) {
+            this.canvasContainer.showImageCanvas()
             this.videoCanvas.closePhotoBooth()
             this.canvasContainer.removeChild(this.videoCanvas.el)
         }

@@ -143,10 +143,26 @@ export default class VideoLayer {
         this.$photoBoothControls.append(takePhotoButton)
     }
 
+    addCancelPhotoButton() {
+        const cancelPhotoButton = document.createElement('button')
+        cancelPhotoButton.classList.add('button', 'cancel-photo')
+        cancelPhotoButton.setAttribute('id', 'cancel-photo')
+        cancelPhotoButton.innerHTML = `${XIcon}`
+        cancelPhotoButton.addEventListener('click', (ev: MouseEvent) => this.cancelCamera(ev), {once: true})
+
+        this.$photoBoothControls.append(cancelPhotoButton)
+    }
+
     removeTakePhotoButton() {
         const $takePhotoButton = this.$photoBoothControls.querySelector('.take-photo')
 
         if ($takePhotoButton) $takePhotoButton.remove()
+    }
+
+    removeCancelPhotoButton() {
+        const $cancelPhotoButton = this.$photoBoothControls.querySelector('.cancel-photo')
+
+        if ($cancelPhotoButton) $cancelPhotoButton.remove()
     }
 
     addConfirmationControls() {
@@ -178,12 +194,14 @@ export default class VideoLayer {
     removeAllControls() {
         this.removeConfirmControls()
         this.removeTakePhotoButton()
+        this.removeCancelPhotoButton()
     }
 
     retakePhoto() {
         this.play()
         this.removeConfirmControls()
         this.addTakePhotoButton()
+        this.addCancelPhotoButton()
     }
 
     async takePhoto() {
@@ -201,6 +219,7 @@ export default class VideoLayer {
         this.$photoBooth.classList.add('active')
         this.startImageCapture()
         this.addTakePhotoButton()
+        this.addCancelPhotoButton()
     }
 
     closePhotoBooth() {
@@ -212,6 +231,11 @@ export default class VideoLayer {
     triggerCamera(ev: MouseEvent) {
         ev.stopPropagation()
         document.dispatchEvent(new CustomEvent('trigger-camera'))
+    }
+
+    cancelCamera(ev: MouseEvent) {
+        ev.stopPropagation()
+        document.dispatchEvent(new CustomEvent('cancel-camera'))
     }
 
     getAspectRatio() {
