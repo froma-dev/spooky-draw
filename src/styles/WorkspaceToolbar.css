@@ -112,6 +112,8 @@
                     grid-column: 1;
                     grid-row: 1;
                     width: 100%;
+                    max-height: 50rem;
+                    object-fit: contain;
                 }
 
                 .options {

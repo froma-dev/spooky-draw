@@ -89,7 +89,6 @@ export default class WorkspaceToolBar {
                 $status.remove()
             }
 
-            debugger
             $status.classList.add('status', `--transformed`)
             $transformedImg.classList.add('transformed')
             $transformedImg.crossOrigin = 'anonymous'
